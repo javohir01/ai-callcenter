@@ -12,29 +12,28 @@ const router = createRouter({
     },
     {
       path: '/',
-      name: 'Home',
-      component: () => import('@/views/Home.vue'),
-      meta: { requiresGuest: true }
-    },
-    {
-      path: '/',
       component: () => import('@/layouts/DashboardLayout.vue'),
       meta: { requiresAuth: true },
       children: [
         {
-          path: '/sms',
-          name: 'Dashboard',
-          component: () => import('@/views/DashboardView.vue')
+          path: '/outgoing-calls',
+          name: 'Исходящие звонки',
+          component: () => import('@/views/OutgoingCalls.vue')
         },
         {
-          path: '/sms-frame',
-          name: 'OperationsRegistry',
-          component: () => import('@/views/OperationsRegistry.vue')
-        },
-        {
-          path: '/statistics',
-          name: 'Statistics',
+          path: '/incoming-calls',
+          name: 'Входящие звонки',
           component: () => import('@/views/StatisticsView.vue')
+        },
+        {
+          path: '/list-collections',
+          name: 'Список коллекций',
+          component: () => import('@/views/SmsFrames.vue')
+        },
+        {
+          path: '/settings',
+          name: 'SIP Настройки',
+          component: () => import('@/views/SmsFrames.vue')
         }
       ]
     }
@@ -46,7 +45,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next('/')
+    next('/outgoing-calls')
   } else {
     next()
   }

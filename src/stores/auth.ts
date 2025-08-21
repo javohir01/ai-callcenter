@@ -1,10 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { login as apiLogin } from '@/api/auth.js'
+import { login as apiLogin, getMe } from '@/api/auth.js'
 import { setAccessToken } from "@/utils/localStorage"
-import { getMe } from '@/api/profile'
 
-// Helper functions for localStorage
 const getLocal = <T>(key: string, fallback: T): T => {
   try {
     const value = localStorage.getItem(key)
@@ -21,16 +19,18 @@ const removeLocal = (key: string) => {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const defaultUser = { merchantName: '' }
+  const defaultUser = { phone: '' }
   const isAuthenticated = ref(getLocal<boolean>('isAuthenticated', false))
   const user = ref(getLocal('user', defaultUser))
 
-  // Fetch user profile from API
   const fetchUser = async () => {
     try {
       const response = await getMe()
-      if (response?.data?.data) {
-        user.value = response.data.data
+      if (response?.data) {
+        
+      console.log('Login response:', response?.data)
+      console.log('Login response1:', response)
+        user.value = response.data
         setLocal('user', user.value)
       }
     } catch (error) {
@@ -38,15 +38,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Login function
   const login = async (email: string, password: string) => {
     try {
       const response = await apiLogin(email, password)
-      const data = response?.data?.data
-
-      if (data?.accessToken) {
+      const data = response?.data
+      if (data?.access_token) {
         isAuthenticated.value = true
-        setAccessToken(data.accessToken)
+        setAccessToken(data.access_token)
         await fetchUser()
         setLocal('isAuthenticated', true)
         setLocal('user', user.value)
@@ -55,14 +53,12 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (e) {
       console.error('Login xatolik:', e)
     }
-    // Reset state on failure
     isAuthenticated.value = false
     setLocal('isAuthenticated', false)
     removeLocal('user')
     return false
   }
 
-  // Logout function
   const logout = () => {
     isAuthenticated.value = false
     user.value = defaultUser

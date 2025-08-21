@@ -8,12 +8,12 @@
       class="sidebar"
       color="grey-800"
       theme="dark"
-      width="240"
+      width="260"
       rail-width="60"
     >
       <div class="logo-section" >
         <div class="logo-full">
-           <img src="@/assets/img/logo-.svg" alt="logo">
+           <img src="@/assets/img/logo.svg" alt="logo">
         </div>
       </div>
 
@@ -61,23 +61,16 @@
             <div class="user-info" v-bind="props" style="cursor:pointer;">
               <v-divider vertical class="mx-4" />
               <div class="user-details">
-                <div class="user-name">{{ authStore.user?.merchantName }}</div>
+                <div class="user-name">{{ authStore.user?.phone }}</div>
                 <div class="user-subtitle">Ваш профиль</div>
               </div>
               <v-avatar size="44" class="ml-3">
-                <span class="avatar-text">{{ getInitials(authStore.user?.merchantName) }}</span>  
+                <img src="/img/user.svg" style="width: 30px; height: 30px;" />
                 <div class="status-indicator" />
               </v-avatar>
             </div>
           </template>
           <el-card class="profile-menu" shadow="always" body-style="padding: 16px;">
-            <!-- Header -->
-            <div class="profile-menu-header" style="margin-bottom: 12px;">
-              <div class="user-name" style="font-weight: 600;">{{ authStore.user?.name }}</div>
-              <div class="user-subtitle" style="font-size: 13px; color: #888;">Ваш профиль</div>
-            </div>
-
-            <!-- Menu -->
             <el-menu
               class="profile-menu-list"
               router
@@ -87,11 +80,11 @@
               text-color="#333"
               mode="vertical"
             >
-              <el-menu-item index="/profile" style="margin-top: 16px; width: 100%; height: 35px;" class="profile-menu-link">
-                Профиль
+              <el-menu-item index="/outgoing-calls" style="margin-top: 16px; width: 100%; height: 35px;" class="profile-menu-link">
+                Исходящие звонки
               </el-menu-item>
-              <el-menu-item index="/statistics" style="margin-top: 16px; width: 100%; height: 35px;" class="profile-menu-link">
-                Статистика
+              <el-menu-item index="/settings" style="margin-top: 16px; width: 100%; height: 35px;" class="profile-menu-link">
+                SIP Настройки
               </el-menu-item>
             </el-menu>
             <!-- Logout Button -->
@@ -119,63 +112,32 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useProfileStore } from '@/stores/profile'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const profileStore = useProfileStore()
 const drawer = ref(true)
 const rail = ref(false)
-const darkMode = ref(true)
-
-const paymentItems = [
-  { title: 'Оплата', icon: '/img/sidebar/payment.svg', to: '/payment' },
-  { title: 'История транзакций',  icon: '/img/sidebar/transactions.svg', to: '/transactions' },
-]
-
-const reportItems = [
-  { title: 'Реестр операций', icon: '/img/sidebar/operations-registry.svg', to: '/operations-registry' },
-  { title: 'История баланса', icon: '/img/sidebar/balance-history.svg', to: '/balance-history' },
-]
-
-const profileItems = [
-  { title: 'Профиль', icon: '/img/sidebar/profile.svg', to: '/profile' },
-  { title: 'Статистика', icon: '/img/sidebar/statistics.svg', to: '/statistics' },
-]
-  const userRoles = computed(() => authStore.user?.roles || [])
 
 const menuItems = computed(() => {
   const items = [
-    { title: 'Главная', icon: '/img/sidebar/statistics.svg', to: '/', show: userRoles.value },
-    { title: 'SMS Главная', icon: '/img/sidebar/home.svg', to: '/transactions', show: userRoles.value.includes('ROLE_BRANCH') || userRoles.value.includes('ROLE_SERVICE') || userRoles.value.includes('ROLE_ADMIN') },
-    { title: 'SMS шаблоны', icon: '/img/sidebar/sms-frame.svg', to: '/operations-registry', show: userRoles.value.includes('ROLE_BRANCH') || userRoles.value.includes('ROLE_SERVICE') || userRoles.value.includes('ROLE_ADMIN') },
+    { title: 'Исходящие звонки', icon: '/img/sidebar/out-call.svg', to: '/outgoing-calls', show: true },
+    { title: 'Входящие звонки', icon: '/img/sidebar/in-call.svg', to: '/incoming-calls', show: true },
+    { title: 'Список коллекций', icon: '/img/sidebar/list.svg', to: '/list-collections', show: true },
+    { title: 'SIP Настройки', icon: '/img/sidebar/setting.svg', to: '/settings', show: true },
   ]
-  // ROLE_ADMIN uchun "Оплата" ni yashirish
- 
   return items.filter(i => i.show)
 })
 const currentPageTitle = computed(() => {
   const titles: Record<string, string> = {
-    '/': 'Сводный отчет',
-    '/payment': 'Оплата',
-    '/transactions': 'История транзакций',
-    '/summary-report': 'Сводный отчет',
-    '/operations-registry': 'Реестр операций',
-    '/balance-history': 'История баланса',
-    '/profile': 'Профиль',
-    '/statistics': 'Статистика',
-    '/users': 'Пользователи',
+    '/outgoing-calls': 'Исходящие звонки',
+    '/incoming-calls': 'Входящие звонки',
+    '/list-collections': 'Список коллекций',
+    '/settings': 'SIP Настройки'
   }
   return titles[route.path] || 'Dashboard'
 })
-const getInitials = (username?: string) => {
-  if (!username) return ''
-  return username
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase())
-    .join('')
-}
+
 const handleLogout = () => {
   authStore.logout()
   router.push('/login')
@@ -274,7 +236,7 @@ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-weight: 700;
   font-size: 18px;
   color: #374151;
-  line-height: 1.2;
+  line-height: 1.8;
 }
 
 .user-subtitle {
@@ -364,9 +326,8 @@ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 </style>
-
 <style>
-.v-list-item.v-list-item--active {
-  background-color: rgba(37, 99, 235, 1);
-}
+  .v-list-item.v-list-item--active {
+    background-color: rgba(37, 99, 235, 1);
+  }
 </style>

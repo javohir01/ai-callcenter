@@ -3,7 +3,7 @@
     <div class="login-content">
       <div class="image-section">
         <div class="image-placeholder">
-          <img src="@/assets/img/left.png" alt="QQM IT Solutions" class="login-image" />
+          <img src="/img/left.png" alt="QQM IT Solutions" class="login-image" />
         </div>
       </div>
 
@@ -16,10 +16,10 @@
           
           <v-form @submit.prevent="handleLogin" class="login-form">
             <div class="input-group">
-              <label class="input-label">Логин*</label>
+              <label class="input-label">Номер телефона*</label>
               <v-text-field
-                v-model="username"
-                placeholder="Ваш Логин"
+                v-model="phone"
+                placeholder="Ваш телефон"
                 variant="outlined"
                 class="custom-input"
                 hide-details="auto"
@@ -72,11 +72,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const username = ref('')
+const phone = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
@@ -90,22 +91,35 @@ const passwordRules = [
 
 const handleLogin = async () => {
   loading.value = true
-  console.log('Login attempt:', { username: username.value, password: password.value })
+  console.log('Login attempt:', { phone: phone.value, password: password.value })
 
   try {
-    const success = await authStore.login(username.value, password.value)
+    const success = await authStore.login(phone.value, password.value)
 
     if (success) {
-      router.push('/statistics')
+      ElMessage({
+        message: 'Вы успешно вошли в систему!',
+        type: 'success',
+        duration: 5000,
+        showClose: true,
+      })
+      router.push('/outgoing-calls')
     } else {
-      console.error('Не удалось войти. Проверьте свои учетные данные.')
+      ElMessage({
+        message: 'Не удалось войти. Проверьте свои учетные данные.',
+        type: 'error',
+        duration: 5000,
+        showClose: true,
+      })
     }
   } catch (error) {
-    console.error('Login error:', error)
-
-    console.error(
-      error?.response?.data?.message || error.message || 'Login error occurred'
-    )
+    const errorMsg = error?.response?.data?.message || error.message || 'Произошла ошибка при входе'
+    ElMessage({
+      message: errorMsg,
+      type: 'error',
+      duration: 5000,
+      showClose: true,
+    })
   } finally {
     loading.value = false
   }
