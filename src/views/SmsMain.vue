@@ -199,7 +199,7 @@
 
 <script setup lang="ts">
 import { ref, h, watch, onMounted } from 'vue'
-import {useSmsStore} from "@/stores/sms";
+import {useSmsStore} from "@/stores/call";
 import {useResourceStore} from "@/stores/resource";
 import {formatDateToIso} from "@/utils/helpers";
 

@@ -1,40 +1,20 @@
 <template>
-  <v-container fluid class="sms-container">
+  <v-container fluid v-loading="isLoading" class="call-container">
     <ByCalls />
-    <v-row>
+    <v-row class="mt-5">
       <div class="filter-bar">
-        <el-date-picker
-          v-model="dateRange"
-          class="filter-date"
-          type="daterange"
-          range-separator=" - "
-          start-placeholder="Начало"
-          end-placeholder="Конец"
-          size="large"
-          format="YYYY-MM-DD"
-          :prefix-icon="CalendarIcon"
-        />
         <el-input
           v-model.lazy="filter.phoneNumber"
           class="filter-search"
           size="large"
           placeholder="Поиск"
           clearable
-          @keyup.enter="fetchSms"
+          @keyup.enter="fetchOutgoingCall"
         >
           <template #prepend>
             <img src="/img/search.svg" style="width: 18px; height: 18px; margin-right: 6px;" />
           </template>
         </el-input>
-        <el-button
-          class="filter-btn"
-          icon="el-icon-filter"
-          circle
-          @click="showFilterModal = true"
-        >
-          <img src="/img/filter.svg" style="width: 18px; height: 18px;" />
-          <span class="filter-btn-text">Фильтры</span>
-        </el-button>
       </div>
     </v-row>
 
@@ -42,9 +22,9 @@
     <div class="table-container">
       <v-data-table
         :headers="headers"
-        :items="smsStore?.smses?.content"
-        :loading="smsStore.loading"
-        :items-per-page="parseInt(filter.size)"
+        :items="callStore?.outgoingCalls?.calls"
+        :loading="callStore.loading"
+        :items-per-page="filter.per_page"
         :page.sync="filter.page"
         :server-items-length="totalItems"
         hide-default-footer
@@ -58,18 +38,29 @@
           <span class="transaction-id">{{ item.id }}</span>
         </template>
 
-        <template #item.merchantName="{ item }">
-          <span class="comment-text">{{ item.merchantName }}</span>
+        <template #item.client_name="{ item }">
+          <span class="comment-text">{{ item.client_name }}</span>
         </template>
-        <template #item.userId="{ item }">
-          {{ item.userId }}
+        <template #item.recording_url="{ item }">
+          <div class="d-flex align-center">
+            <audio controls style="width: 200px;">
+              <source :src="item.recording_url" type="audio/wav">
+              Ваш браузер не поддерживает воспроизведение аудио.
+            </audio>
+            <v-btn
+              variant="plain"
+              color="primary"
+              size="large"
+              :href="item.recording_url"
+              download
+            >
+              <v-icon>mdi-download</v-icon>
+            </v-btn>
+          </div>
         </template>
 
-        <template #item.originator="{ item }">
-          <span class="amount-text">{{ item.originator }}</span>
-        </template>
-        <template #item.phoneNumber="{ item }">
-          <span class="amount-text">{{ item.phoneNumber }}</span>
+        <template #item.phone="{ item }">
+          <span class="amount-text">{{ item.phone }}</span>
         </template>
         <template #item.status="{ item }">
           <v-chip
@@ -79,30 +70,22 @@
             variant="flat"
             style="border-radius: 6px;"
           >
-            {{ getStatus(item.status) }}
+            {{ item.status_ru }}
           </v-chip>
         </template>
-        <template #item.createdDate="{ item }">
+        <template #item.start_date="{ item }">
           <div class="d-flex flex-column gap-2  ">
-            <span class="date-text">Дата отправки:{{ new Date(item.createdDate).toLocaleString() }}</span>
-            <span class="date-text">Дата доставки:{{ new Date(item.modifiedDate).toLocaleString() }}</span>
+            <span class="date-text">Дата начала:{{ item.start_date }}</span>
+            <span class="date-text">Дата окончания:{{ item.end_date }}</span>
           </div>
         </template>
       </v-data-table>
-      <v-btn
-        color="primary"
-        variant="flat"
-        class="export-btn"
-        prepend-icon="mdi-export"
-        @click="exportSms"
-      >
-        Экспорт
-      </v-btn>
+  
       <div class="d-flex justify-space-between mt-4 ml-4 mb-2">
         <div class="d-flex align-center" style="gap:8px">
           <span class="pagination-text">Показано</span>
             <el-select
-              v-model="filter.size"
+              v-model="filter.per_page"
               placeholder="Период"
               size="large"
               class="pagination-select"
@@ -115,11 +98,11 @@
                 :value="item"
               />
             </el-select>
-          <span class="pagination-text d-flex">из {{ smsStore?.smses?.totalElements }}</span>
+          <span class="pagination-text d-flex">из {{ callStore?.outgoingCalls?.total }}</span>
         </div>
         <v-pagination
           v-model="filter.page"
-          :length="smsStore?.smses?.totalPages"
+          :length="callStore?.outgoingCalls?.total / filter.per_page + 1"
           :total-visible="5"
           color="primary"
           size="small"
@@ -127,111 +110,33 @@
         />
       </div>
     </div>
-    <!-- Filter Modal -->
-    <el-dialog v-model="showFilterModal" width="360px" custom-class="filter-dialog">
-      <template #header>
-        <div class="filter-header">
-          <span>Фильтры</span>
-          <el-button text icon="el-icon-close" @click="showFilterModal = false"></el-button>
-        </div>
-      </template>
-
-      <el-collapse v-model="activeCollapse" accordion class="filter-collapse">
-        <!-- Operator -->
-        <el-collapse-item name="operator">
-          <template #title>
-            <span class="filter-title">По оператору</span>
-          </template>
-          <el-radio-group v-model="filter.operator" class="filter-radio-group">
-            <el-radio v-for="op in resourceStore.operators" :key="op.id" :label="op.id">
-              {{ op.name }}
-            </el-radio>
-          </el-radio-group>
-        </el-collapse-item>
-
-        <!-- Status -->
-        <el-collapse-item name="status">
-          <template #title>
-            <span class="filter-title">По статусу</span>
-          </template>
-          <el-radio-group v-model="filter.status" class="filter-radio-group">
-            <el-radio v-for="s in statusOptions" :key="s" :label="s">{{ s }}</el-radio>
-          </el-radio-group>
-        </el-collapse-item>
-
-        <!-- Merchant -->
-        <el-collapse-item name="merchant">
-          <template #title>
-            <span class="filter-title">По отправителю</span>
-          </template>
-          <el-radio-group v-model="filter.merchant" class="filter-radio-group">
-            <el-radio
-              v-for="m in resourceStore.merchants"
-              :key="m.merchant"
-              :label="m.merchant"
-            >
-              {{ m.merchantId }}
-            </el-radio>
-          </el-radio-group>
-        </el-collapse-item>
-      </el-collapse>
-
-      <template #footer>
-        <div class="filter-footer">
-          <el-button 
-            class="btn-reset"
-            text 
-            @click="clearFilter"
-          > 
-            Сбросить
-          </el-button>
-          <el-button 
-            type="primary" 
-            class="btn-apply" 
-            @click="applyFilter"
-          > 
-            Применить
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import { ref, h, watch, onMounted } from 'vue'
-import {useSmsStore} from "@/stores/sms";
-import {useResourceStore} from "@/stores/resource";
-import {formatDateToIso} from "@/utils/helpers";
+import {useCallStore} from "@/stores/call";
 import ByCalls from '@/components/ByCalls.vue';
 
-const smsStore = useSmsStore()
-const resourceStore = useResourceStore()
+const callStore = useCallStore()
 
 const itemsPerPageOptions = ['5', '10', '20', '50']
 const isLoading = ref(false)
 const totalItems = ref(0)
-const dateRange = ref('')
 const filter = ref({
-  size: 10,
+  per_page: 10,
   page: 1,
   phoneNumber: "",
-  operator: null,
   status: null,
-  merchant: null,
-  startDate: null,
-  endDate: null
 })
-const showFilterModal = ref(false)
 const headers = [
   { title: '#', key: 'index', width: '60px', sortable: false },
   { title: 'ID', key: 'id', width: '100px' },
-  { title: 'Партнер', key: 'merchantName', width: '100px' },
-  { title: 'ID Партнера', key: 'userId', width: '200px' },
-  { title: 'Отправитель', key: 'originator', width: '200px' },
-  { title: 'Получатель', key: 'phoneNumber', width: '200px' },
-  { title: 'Статус', key: 'status', width: '200px' },
-  { title: 'Дата', key: 'createdDate', width: '500px' },
+  { title: 'Имя клиента', key: 'client_name', width: '200px' },
+  { title: 'Запись звонка', key: 'recording_url', width: '400px' },
+  { title: 'Телефон', key: 'phone', width: '200px' },
+  { title: 'Дата', key: 'start_date', width: '300px' },
+  { title: 'Статус', key: 'status_ru', width: '200px' },
 ]
 const statusOptions = [
   'CREATED',
@@ -243,78 +148,21 @@ const statusOptions = [
   'REJECTED',
   'NOT_DELIVERED'
 ]
-const CalendarIcon = () => h('img', {
-  src: '/img/calendar.svg',
-  style: 'width: 16px; height: 16px;'
-})
 
-watch([filter.value.page, filter.value.size], () => {
-  fetchSms()
+watch([filter.value.page, filter.value.per_page], () => {
+  fetchOutgoingCall()
 })
-watch(dateRange, (newVal) => {
-  filter.value.startDate = newVal?.[0] ? formatDateToIso(newVal[0]) : null
-  filter.value.endDate   = newVal?.[1] ? formatDateToIso(newVal[1]) : null
-  fetchSms()
-})
+const fetchOutgoingCall = async () => {
+  isLoading.value = true
+  try {
+    await callStore.fetchOutgoingCalls({...filter.value })
+  } finally {
+    isLoading.value = false
+  }
+}
 
-const fetchSms = async () => {
-  isLoading.value = true
-  try {
-    await smsStore.fetchSmses({...filter.value, page: filter.value.page - 1 })
-  } finally {
-    isLoading.value = false
-  }
-}
-const fetchOperators = () => {
-  isLoading.value = true
-  try {
-    resourceStore.fetchOperators()
-  } finally {
-    isLoading.value = false
-  }
-}
-const fetchMerchants = () => {
-  isLoading.value = true
-  try {
-    resourceStore.fetchMerchants()
-  } finally {
-    isLoading.value = false
-  }
-}
 const onPageChange = (newPage: number) => {
-  filter.value.page = newPage
-  fetchSms()
-}
-function applyFilter() {
-  fetchSms()
-  showFilterModal.value = false
-}
-function clearFilter() {
-  filter.value.page = 1
-  filter.value.size = 10
-  filter.value.operator = null
-  filter.value.status = null
-  filter.value.merchant = null
-  filter.value.startDate = null
-  filter.value.endDate = null
-  filter.value.phoneNumber = ''
-}
-const exportSms = () => {
-  isLoading.value = true
-  smsStore.smsExport({...filter.value, page: filter.value.page - 1 })
-    .then((res) => {
-      if (res) {
-        const blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'sms.xlsx';
-        a.click();
-        window.URL.revokeObjectURL(url);
-      }
-    }).finally(() => {
-      isLoading.value = false
-    })
+  fetchOutgoingCall()
 }
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -357,9 +205,7 @@ const getStatus = (status: string) => {
 };
 
 onMounted(() => {
-  fetchSms()
-  fetchOperators()
-  fetchMerchants()
+  fetchOutgoingCall()
 })
 </script>
 
@@ -402,29 +248,6 @@ onMounted(() => {
   border: none!important;
   box-shadow: none;
 }
-.filter-btn {
-  background: #fff;
-  border: none;
-  box-shadow: none;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  color: #374151;
-  border-radius: 14px;
-  height: 44px;
-}
-.filter-btn:hover {
-  background: #f3f4f6;
-}
-.filter-btn-text {
-  margin-left: 4px;
-  font-size: 16px;
-}
-.filter-btn .el-button span {
-  margin-left: 25px;
-}
 .filter-bar .el-input-group__prepend{
   box-shadow: none!important;
   padding: 0;
@@ -440,102 +263,28 @@ onMounted(() => {
 el-select.pagination-select {
   width: 70px!important;
 }
-.filter-dialog {
-  border-radius: 16px;
-  padding: 0;
-}
-
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-  font-size: 16px;
-  padding: 4px 8px;
-}
-
-/* Collapse */
-.filter-collapse {
-  border: none;
-}
-.filter-title {
-  font-weight: 500;
-  color: #111827;
-  font-size: 15px;
-}
-.el-collapse-item__header {
-  background: transparent !important;
-  padding: 10px 0;
-}
-.el-collapse-item__content {
-  padding: 4px 0 10px 0 !important;
-}
-
-/* Radio buttons */
-.filter-radio-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-.sms-container .el-radio {
-  margin-right: 0 !important;
-}
-.sms-container .el-radio__label {
-  font-size: 14px;
-  color: #111827;
-}
-.sms-container .el-radio.is-checked .el-radio__inner {
-  border-color: #2563eb;
-  background: #2563eb;
-}
-.sms-container .el-radio__inner {
-  width: 18px;
-  height: 18px;
-}
-
-/* Footer buttons */
-.sms-container .filter-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 0px;
-}
-.btn-reset {
-  color: #ef4444;
-  font-weight: 500;
-}
-.btn-apply {
-  background: #2563eb;
-  border-radius: 20px;
-  font-weight: 500;
-  color: #fff;
-  padding: 8px 18px;
-}
-.sms-container .el-dialog__headerbtn{
-  top:10px;
-  right: 10px;
-}
-.btn-reset.el-button, .btn-reset.el-button.is-round {
-  padding: 8px 0px;
-}
-.sms-container .el-select--large{
+.call-container .el-select--large{
   width: 90%;
 }
-.sms-container .el-select--large .el-select__wrapper {
+.call-container .el-select--large .el-select__wrapper {
   width: 100px!important;
 }
-.table-container {
-  position: relative;
+/* audio {
+  width: 150px;
+  height: 30px;
+  border-radius: 4px;
+  background-color: #f5f5f5;
 }
-.export-btn{
-  background: #2563eb;
-  color: #fff;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-weight: 500;
-  position: absolute;
-  right: 20px; 
-  top: 10px;
+audio::-webkit-media-controls-panel {
+  background-color: #f5f5f5;
+  border-radius: 4px;
 }
+audio::-webkit-media-controls-play-button {
+  background-color: #4CAF50;
+  border-radius: 50%;
+}
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+  color: #333;
+} */
 </style>

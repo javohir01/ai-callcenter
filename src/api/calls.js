@@ -1,19 +1,10 @@
 import axiosInstance from "@/utils/axios.js";
 
-export async function sms(params) {
+export async function outgoingCalls(params) {
   return axiosInstance({
-    url: `/report/sms`,
+    url: `/calls/outgoing`,
     method: 'GET',
     params
-  })
-}
-
-export async function exportSms(params) { 
-  return axiosInstance({
-    url: `/report/sms/export`,
-    method: 'GET',
-    params,
-    responseType: 'blob'
   })
 }
 
