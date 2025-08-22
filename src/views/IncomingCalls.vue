@@ -9,7 +9,7 @@
           v-model.lazy="filter.phoneNumber"
           class="filter-search"
           size="large"
-          placeholder="Поиск"
+          placeholder="Поиск по номеру телефона"
           clearable
           @keyup.enter="fetchOutgoingCall"
         >
@@ -17,14 +17,29 @@
             <img src="/img/search.svg" style="width: 18px; height: 18px; margin-right: 6px;" />
           </template>
         </el-input>
+        <el-select
+          v-model="filter.status"
+          placeholder="Все статусы"
+          size="large"
+          class="status-select"
+          @update:modelValue="fetchOutgoingCall"
+          clearable
+        >
+          <el-option
+            v-for="item in statusOptions"
+            :key="item + 'page'"
+            :label="item"
+            :value="item"
+          />
+        </el-select>
       </div>
     </v-row>
 
     <!-- Data Table -->
-    <!-- <div class="table-container">
+    <div class="table-container">
       <v-data-table
         :headers="headers"
-        :items="callStore?.outgoingCalls?.calls"
+        :items="callStore?.incomingCalls?.calls"
         :loading="callStore.loading"
         :items-per-page="filter.per_page"
         :page.sync="filter.page"
@@ -64,21 +79,22 @@
         <template #item.phone="{ item }">
           <span class="amount-text">{{ item.phone }}</span>
         </template>
-        <template #item.status="{ item }">
+        <template #item.status_ru="{ item }">
           <v-chip
-            :color="getStatusColor(item.status)"
-            :style="getChipStyle(item.status)"
             size="small"
             variant="flat"
-            style="border-radius: 6px;"
+            :style="{
+              backgroundColor: getStatusColor(item.status_ru),
+              color: getChipStyle(item.status_ru),
+              borderRadius: '6px'
+            }"
           >
             {{ item.status_ru }}
           </v-chip>
         </template>
         <template #item.start_date="{ item }">
           <div class="d-flex flex-column gap-2  ">
-            <span class="date-text">Дата начала:{{ item.start_date }}</span>
-            <span class="date-text">Дата окончания:{{ item.end_date }}</span>
+            <span class="date-text">{{ item.start_date }}</span>
           </div>
         </template>
       </v-data-table>
@@ -100,18 +116,18 @@
                 :value="item"
               />
             </el-select>
-          <span class="pagination-text d-flex">из {{ callStore?.outgoingCalls?.total }}</span>
+          <span class="pagination-text d-flex">из {{ callStore?.incomingCalls?.total }}</span>
         </div>
         <v-pagination
           v-model="filter.page"
-          :length="callStore?.outgoingCalls?.total / filter.per_page + 1"
+          :length="callStore?.incomingCalls?.total / filter.per_page + 1"
           :total-visible="5"
           color="primary"
           size="small"
           @update:modelValue="onPageChange"
         />
       </div>
-    </div> -->
+    </div>
   </v-container>
 </template>
 
@@ -131,24 +147,28 @@ const filter = ref({
   phoneNumber: "",
   status: null,
 })
+const statusOptions = [
+  "Ожидает",
+  "Звонит", 
+  "Не отвечен",
+  "Прерван",
+  "Завершен",
+  "Отменен",
+  "Выполняется",
+  "Приостановлен",
+  "Занято",
+  "Ошибка"
+]
+
 const headers = [
   { title: '#', key: 'index', width: '60px', sortable: false },
   { title: 'ID', key: 'id', width: '100px' },
-  { title: 'Имя клиента', key: 'client_name', width: '200px' },
-  { title: 'Запись звонка', key: 'recording_url', width: '400px' },
-  { title: 'Телефон', key: 'phone', width: '200px' },
   { title: 'Дата', key: 'start_date', width: '300px' },
+  { title: 'Телефон', key: 'phone', width: '200px' },
   { title: 'Статус', key: 'status_ru', width: '200px' },
-]
-const statusOptions = [
-  'CREATED',
-  'FAILED',
-  'NOT_FOUND',
-  'EXPIRED',
-  'TRANSMITTED',
-  'DELIVERED',
-  'REJECTED',
-  'NOT_DELIVERED'
+  { title: 'Запись звонка', key: 'recording_url', width: '400px' },
+  // { title: 'Тип запроса', key: 'direction', width: '200px' },
+  // { title: 'Результат', key: 'client_name', width: '200px' },
 ]
 
 watch([filter.value.page, filter.value.per_page], () => {
@@ -157,7 +177,7 @@ watch([filter.value.page, filter.value.per_page], () => {
 const fetchOutgoingCall = async () => {
   isLoading.value = true
   try {
-    await callStore.fetchOutgoingCalls({...filter.value })
+    await callStore.FetchIncomingCalls({...filter.value })
   } finally {
     isLoading.value = false
   }
@@ -168,41 +188,32 @@ const onPageChange = (newPage: number) => {
 }
 const getStatusColor = (status: string) => {
     switch (status) {
-      case 'CREATED': return '#FFF2DD'
-      case 'FAILED': return '#FEF2F2'
-      case 'NOT_FOUND': return '#FEF2F2'
-      case 'EXPIRED': return '#FEF2F2'
-      case 'TRANSMITTED': return '#E2FBE8'
-      case 'DELIVERED': return '#E2FBE8'
-      case 'REJECTED': return '#E2FBE8'
-      case 'NOT_DELIVERED': return '#E2FBE8'
+      case "Ожидает" : return '#FFF2DD';
+      case "Звонит": return '#FEF2F2';
+      case "Не отвечен": return '#E2FBE8'
+      case "Прерван": return '#E2FBE8'
+      case "Завершен": return '#FEF2F2'
+      case "Отменен": return '#E2FBE8'
+      case "Выполняется": return '#FEF2F2'
+      case "Приостановлен": return '#FEF2F2'
+      case "Занято": return '#E2FBE8'
+      case "Ошибка": return '#E2FBE8'
       default: return '#E2E3E5'
     }
   }
 const getChipStyle = (status: string) => {
   switch (status) {
-    case 'CREATED': return 'color: #B17700';
-    case 'FAILED': return 'color: #DC2626'
-    case 'NOT_FOUND': return 'color: #DC2626'
-    case 'EXPIRED': return 'color: #DC2626'
-    case 'TRANSMITTED': return 'color: #1B3822'
-    case 'DELIVERED': return 'color: #1B3822'
-    case 'REJECTED': return 'color: #1B3822'
-    case 'NOT_DELIVERED': return 'color: #1B3822'
-    default: return 'color: #1B3822'
-  }
-};
-const getStatus = (status: string) => {
-  switch (status) {
-    case 'CREATED': return 'Новый';
-    case 'FAILED': return 'Неуспешно'
-    case 'NOT_FOUND': return 'Неуспешно'
-    case 'EXPIRED': return 'Неуспешно'
-    case 'TRANSMITTED': return 'Успешно'
-    case 'DELIVERED': return 'Успешно'
-    case 'REJECTED': return 'Успешно'
-    case 'NOT_DELIVERED': return 'Успешно'
-    default: return status
+    case "Ожидает" : return '#B17700';
+    case "Звонит": return '#1B3822';
+    case "Не отвечен": return '#DC2626'
+    case "Прерван": return '#DC2626'
+    case "Завершен": return '#1B3822'
+    case "Отменен": return '#DC2626'
+    case "Выполняется": return '#1B3822'
+    case "Приостановлен": return '#1B3822'
+    case "Занято": return '#DC2626'
+    case "Ошибка": return '#DC2626'
+    default: return '#1B3822'
   }
 };
 
@@ -271,22 +282,7 @@ el-select.pagination-select {
 .call-container .el-select--large .el-select__wrapper {
   width: 100px!important;
 }
-/* audio {
-  width: 150px;
-  height: 30px;
-  border-radius: 4px;
-  background-color: #f5f5f5;
+.call-container .el-select--large.status-select .el-select__wrapper {
+  width: 300px!important;
 }
-audio::-webkit-media-controls-panel {
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
-audio::-webkit-media-controls-play-button {
-  background-color: #4CAF50;
-  border-radius: 50%;
-}
-audio::-webkit-media-controls-current-time-display,
-audio::-webkit-media-controls-time-remaining-display {
-  color: #333;
-} */
 </style>

@@ -2,30 +2,26 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import {
   byDateChart,
-  byStatusWithDetailChart,
-  byOperatorChart
+  IncomingCallStats as IncomingCallStatsApi,
 } from '@/api/statistic'
 
 export const useStatisticStore = defineStore('statistic', () => {
   const error = ref(null)
+  const incomingCallStatistics = ref({})
+  const loading = ref(false)
+
   const fetchByCallChart = async (params: any) => {
     const res = await byDateChart(params)
     return res
   }
-  const fetchByStatusWithDetailChart = async (params: any) => {
-    const res = await byStatusWithDetailChart(params)
-    return res
-  }
-
-  const fetchByOperatorChart = async (params: any) => {
-    const res = await byOperatorChart(params)
-    return res.data
+  const FetchIncomingCallStats = async (params: any) => {
+    const response = await IncomingCallStatsApi(params)
+    return response      
   }
   return {
     error,
+    incomingCallStatistics,
     fetchByCallChart,
-    fetchByStatusWithDetailChart,
-    fetchByOperatorChart,
-
+    FetchIncomingCallStats
   }
 })

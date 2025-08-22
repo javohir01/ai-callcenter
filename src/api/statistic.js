@@ -7,17 +7,9 @@ export async function byDateChart(params) {
     params
   })
 }
-export async function byStatusWithDetailChart(params) {
+export async function IncomingCallStats(params) {
   return axiosInstance({
-    url: `/report/sms/summary-result-by-all-status`,
-    method: 'GET',
-    params
-  })
-}
-
-export async function byOperatorChart(params) {
-  return axiosInstance({
-    url: `/report/sms/summary-result-by-operator`,
+    url: `/dashboard/stats`,
     method: 'GET',
     params
   })

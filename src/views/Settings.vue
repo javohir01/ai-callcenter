@@ -1,154 +1,227 @@
 <template>
-  <v-container fluid v-loading="isLoading" class="call-container">
-    <!-- Data Table -->
+  <v-container fluid v-loading="loading" class="call-container">
+    <div class="d-flex justify-end">
+      <el-button 
+        type="primary" 
+        class="add-button"
+        @click="openCreateDialog"
+      > 
+        + Добавлять
+      </el-button>
+    </div>
+
     <div class="table-container">
       <v-data-table
         :headers="headers"
-        :items="callStore?.Settings?.calls"
-        :loading="callStore.loading"
+        :items="sipStore?.sips.sips"
+        :loading="sipStore.loading"
         :items-per-page="filter.per_page"
         :page.sync="filter.page"
-        :server-items-length="totalItems"
+        :server-items-length="0"
         hide-default-footer
         class="balance-table"
       >
-        <template #item.index="{ index }">
-          <span class="row-number">{{ index + 1 }}</span>
-        </template>
-
-        <template #item.id="{ item }">
-          <span class="transaction-id">{{ item.id }}</span>
-        </template>
-
-        <template #item.client_name="{ item }">
-          <span class="comment-text">{{ item.client_name }}</span>
-        </template>
-
-        <template #item.phone="{ item }">
-          <span class="amount-text">{{ item.phone }}</span>
-        </template>
-        <template #item.status="{ item }">
-          <v-chip
-            :color="getStatusColor(item.status)"
-            :style="getChipStyle(item.status)"
+        <template #item.actions="{ item }">
+          <el-button
             size="small"
-            variant="flat"
-            style="border-radius: 6px;"
+            circle
+            class="border-none"
+            type="light"
+            @click="openEditDialog(item)"
           >
-            {{ item.status_ru }}
-          </v-chip>
-        </template>
-        <template #item.start_date="{ item }">
-          <div class="d-flex flex-column gap-2  ">
-            <span class="date-text">Дата начала:{{ item.start_date }}</span>
-            <span class="date-text">Дата окончания:{{ item.end_date }}</span>
-          </div>
+            <img src="/img/edit.svg" alt="Edit" />
+          </el-button>
+          <el-button
+            size="small"
+            circle
+            type="light"
+            class="border-none"
+            @click="openDeleteDialog(item)"
+          >
+            <img src="/img/delete.svg" alt="Delete" />
+          </el-button>
         </template>
       </v-data-table>
-  
-      <div class="d-flex justify-space-between mt-4 ml-4 mb-2">
-        <div class="d-flex align-center" style="gap:8px">
-          <span class="pagination-text">Показано</span>
-            <el-select
-              v-model="filter.per_page"
-              placeholder="Период"
-              size="large"
-              class="pagination-select"
-              @update:modelValue="onPageChange"
-            >
-              <el-option
-                v-for="item in itemsPerPageOptions"
-                :key="item + 'page'"
-                :label="item"
-                :value="item"
-              />
-            </el-select>
-          <span class="pagination-text d-flex">из {{ callStore?.Settings?.total }}</span>
-        </div>
-        <v-pagination
-          v-model="filter.page"
-          :length="callStore?.Settings?.total / filter.per_page + 1"
-          :total-visible="5"
-          color="primary"
-          size="small"
-          @update:modelValue="onPageChange"
-        />
-      </div>
     </div>
+    <!-- 🔹 Create/Edit Dialog -->
+    <el-dialog
+      v-model="isFormDialog"
+      :title="form.id ? 'Редактировать SIP' : 'Добавить SIP'"
+    >
+      <el-form :model="form" label-position="top" label-width="140px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="Имя">
+              <el-input v-model="form.name" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="Хостинг">
+              <el-input v-model="form.endpoint" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="Логин">
+              <el-input v-model="form.username" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="Количество каналов">
+              <el-input v-model.number="form.channel_count" type="number" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="Пароль">
+              <el-input v-model="form.password" type="password" show-password />
+            </el-form-item>
+          </el-col>
+        </el-row>       
+      </el-form>
+      <template #footer>
+        <el-button class="cancel-button" @click="isFormDialog = false">Отмена</el-button>
+        <el-button type="primary" class="add-button" @click="handleSave">Добавлять</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 🔹 Delete Dialog -->
+    <el-dialog
+      v-model="isDeleteDialog"
+      title="O‘chirishni tasdiqlash"
+      width="400px"
+    >
+      <span>Вы хотите удалить {{ deleteTarget?.name }}?</span>
+      <template #footer>
+        <el-button @click="isDeleteDialog = false">Нет</el-button>
+        <el-button type="danger" @click="confirmDelete">Да, удалить.</el-button>
+      </template>
+    </el-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, h, watch, onMounted } from 'vue'
-import {useCallStore} from "@/stores/call";
-import ByCalls from '@/components/ByCalls.vue';
+import { ref, reactive, onMounted } from "vue";
+import { useSipStore } from "@/stores/sip";
 
-const callStore = useCallStore()
+const sipStore = useSipStore();
 
-const itemsPerPageOptions = ['5', '10', '20', '50']
-const isLoading = ref(false)
-const totalItems = ref(0)
+const loading = ref(false);
+const rows = ref<any[]>([]);
 const filter = ref({
   per_page: 10,
   page: 1,
-  phoneNumber: "",
-  status: null,
 })
+
+const isFormDialog = ref(false);
+const isDeleteDialog = ref(false);
+const deleteTarget = ref<any>(null);
+
+const form = reactive({
+  id: null,
+  name: "",
+  endpoint: "",
+  username: "",
+  password: "",
+  channel_count: 1,
+});
+
 const headers = [
-  { title: '#', key: 'index', width: '60px', sortable: false },
-  { title: 'ID', key: 'id', width: '100px' },
-  { title: 'Имя', key: 'client_name', width: '200px' },
-  { title: 'Конечная точка', key: 'recording_url', width: '400px' },
-  { title: 'Имя пользователя', key: 'phone', width: '200px' },
-  { title: 'Количество каналов', key: 'start_date', width: '300px' },
-  { title: 'Статус', key: 'status_ru', width: '200px' },
-]
+  { title: "ID", key: "id" },
+  { title: "Имя", key: "name" },
+  { title: "Конечная точка", key: "endpoint" },
+  { title: "Имя пользователя", key: "username" },
+  { title: "Количество каналов", key: "channel_count" },
+  { title: "Статус", key: "status_ru" },
+  { title: "Действия", key: "actions", sortable: false },
+];
 
-watch([filter.value.page, filter.value.per_page], () => {
-  fetchSettings()
-})
-const fetchSettings = async () => {
-  isLoading.value = true
+const fetchData = async () => {
+  loading.value = true;
   try {
-    // await callStore.fetchSettings({...filter.value })
+    const res = await sipStore.index({});
   } finally {
-    isLoading.value = false
-  }
-}
-
-const onPageChange = (newPage: number) => {
-  fetchSettings()
-}
-const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'CREATED': return '#FFF2DD'
-      case 'FAILED': return '#FEF2F2'
-      case 'NOT_FOUND': return '#FEF2F2'
-      case 'EXPIRED': return '#FEF2F2'
-      case 'TRANSMITTED': return '#E2FBE8'
-      case 'DELIVERED': return '#E2FBE8'
-      case 'REJECTED': return '#E2FBE8'
-      case 'NOT_DELIVERED': return '#E2FBE8'
-      default: return '#E2E3E5'
-    }
-  }
-const getChipStyle = (status: string) => {
-  switch (status) {
-    case 'CREATED': return 'color: #B17700';
-    case 'FAILED': return 'color: #DC2626'
-    case 'NOT_FOUND': return 'color: #DC2626'
-    case 'EXPIRED': return 'color: #DC2626'
-    case 'TRANSMITTED': return 'color: #1B3822'
-    case 'DELIVERED': return 'color: #1B3822'
-    case 'REJECTED': return 'color: #1B3822'
-    case 'NOT_DELIVERED': return 'color: #1B3822'
-    default: return 'color: #1B3822'
+    loading.value = false;
   }
 };
-onMounted(() => {
-  fetchSettings()
-})
-</script>
 
+const openCreateDialog = () => {
+  resetForm();
+  isFormDialog.value = true;
+};
+
+// 🔹 Edit
+const openEditDialog = (item: any) => {
+  Object.assign(form, item);
+  isFormDialog.value = true;
+};
+
+// 🔹 Save (Create/Update)
+const handleSave = async () => {
+  loading.value = true;
+  try {
+    if (form.id) {
+      await sipStore.update(form);
+    } else {
+      await sipStore.create(form);
+    }
+    isFormDialog.value = false;
+    fetchData();
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 🔹 Delete
+const openDeleteDialog = (item: any) => {
+  deleteTarget.value = item;
+  isDeleteDialog.value = true;
+};
+
+const confirmDelete = async () => {
+  if (!deleteTarget.value) return;
+  loading.value = true;
+  try {
+    await sipStore.destroy(deleteTarget.value.id);
+    isDeleteDialog.value = false;
+    fetchData();
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 🔹 Reset form
+const resetForm = () => {
+  Object.assign(form, {
+    id: null,
+    name: "",
+    endpoint: "",
+    username: "",
+    password: "",
+    channel_count: 1,
+  });
+};
+
+onMounted(fetchData);
+</script> 
 <style>
+.add-button {
+  background-color: #2563EB;
+  color: #fff;
+  border-radius: 50px;
+  padding: 20px 25px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.cancel-button {
+  border: none;
+  background-color: #fff;
+  color: #333;
+  padding: 20px 25px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.el-input__wrapper
+{
+  border-radius: 16px !important;
+  padding: 10px 12px !important;
+}
 </style>

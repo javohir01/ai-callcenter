@@ -1,58 +1,64 @@
 <template>
   <div v-loading="isLoading">
-    <v-row class="cards">
-      <v-col cols="3" v-for="(card, index) in cardsData" :key="index" class="card-col">
-        <v-card class="card" :color="card.color" elevation="0">
-          <v-card-text class="card-content">
-            <div class="card-icon">{{ card.icon }}</div>
-            <div class="card-title">{{ card.title }}</div>
-            <div class="card-value">{{ card.value }}</div>
-            <div :class="['card-change', card.change > 0 ? 'positive' : 'negative']">
-              {{ card.change }} {{ card.percentage }}%
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    <div class="d-flex justify-space-between mb-4 cards gap-2">
+      <v-card v-for="(card, index) in cardsData" :key="index"  class="card" :color="card.color" elevation="0">
+        <v-card-text class="card-content">
+          <img :src="card.icon" alt="">
+          <div class="card-title">{{ card.title }}</div>
+          <div class="card-value">{{ card.value }}</div>
+          <div :class="['card-change', card.change > 0 ? 'positive' : 'negative']">
+            {{ card.change }} {{ card.percentage }}%
+          </div>
+        </v-card-text>
+      </v-card>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useCallStore } from '@/stores/call';
+import { useStatisticStore } from '@/stores/statistic';
 
-const callStore = useCallStore();
+const statisticStore = useStatisticStore();
 const isLoading = ref(false);
 const data = ref(null);
 const cardsData = ref([
   {
-    icon: '📞', // Placeholder for phone icon
+    icon: 'img/incoming/total.svg', // Placeholder for phone icon
     title: 'Всего звонков сегодня',
-    value: callStore.outgoingCalls?.stats?.totalCalls || 1247,
+    value: data.value?.total_calls_today || 0,
     change: 12.5,
     percentage: '+',
     color: '#E3F2FD' // Light blue background
   },
   {
-    icon: '✅', // Placeholder for checkmark icon
+    icon: 'img/incoming/answered.svg', // Placeholder for checkmark icon
     title: 'Отвеченные звонки',
-    value: callStore.outgoingCalls?.stats?.answeredCalls || 1180,
+    value: data.value?.answered_calls || 0,
     change: -12.5,
     percentage: '',
     color: '#E3F2FD' // Light blue background
   },
   {
-    icon: '❌', // Placeholder for cross icon
+    icon: 'img/incoming/missed.svg', // Placeholder for cross icon
     title: 'Пропущенные звонки',
-    value: callStore.outgoingCalls?.stats?.missedCalls || 67,
+    value: data.value?.missed_calls || 67,
     change: 12.5,
     percentage: '+',
     color: '#E3F2FD' // Light blue background
   },
   {
-    icon: '⏱️', // Placeholder for clock icon
+    icon: 'img/incoming/average.svg', // Placeholder for clock icon
     title: 'Средняя длительность',
-    value: callStore.outgoingCalls?.stats?.averageDuration || '3:24',
+    value: data.value?.average_duration || 0,
+    change: 12.5,
+    percentage: '+',
+    color: '#E3F2FD' // Light blue background
+  },
+  {
+    icon: 'img/incoming/transfered.svg', // Placeholder for clock icon
+    title: 'Переведоды на оператора',
+    value: data.value?.transferred_calls || 0,
     change: 12.5,
     percentage: '+',
     color: '#E3F2FD' // Light blue background
@@ -62,10 +68,10 @@ const cardsData = ref([
 const fetchIncomingCallStats = async () => {
   isLoading.value = true
   try {
-    const res = await callStore.IncomingCallStats()
+    const res = await statisticStore.FetchIncomingCallStats()
     console.log('res')
     console.log(res)
-    console.log(callStore.incomingCallStatistics)
+    console.log(statisticStore.incomingCallStatistics)
     if (res?.data) {
       data.value = res.data || {}
     }
@@ -80,43 +86,40 @@ onMounted(() => {
 </script>
 
 <style>
-.cards {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.card-col {
-  padding: 0 8px;
-}
-
 .card {
   border-radius: 12px;
   padding: 16px;
-  text-align: center;
+  text-align: left;
   height: 100%;
+  min-width: 250px;
+  background-color: unset!important;
 }
 
 .card-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* align-items: center; */
 }
-
+.card-content img {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 8px;
+}
 .card-icon {
   font-size: 24px;
   margin-bottom: 8px;
 }
 
 .card-title {
-  font-size: 14px;
-  color: #666;
+  font-size: 12px;
+  color: #374151;
+  font-weight: 700;
   margin-bottom: 4px;
 }
 
 .card-value {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 28px;
+  font-weight: 700;
   margin-bottom: 4px;
 }
 

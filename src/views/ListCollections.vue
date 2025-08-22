@@ -4,7 +4,7 @@
     <div class="table-container">
       <v-data-table
         :headers="headers"
-        :items="callStore?.outgoingCalls?.calls"
+        :items="callStore?.collections?.campaigns"
         :loading="callStore.loading"
         :items-per-page="filter.per_page"
         :page.sync="filter.page"
@@ -16,38 +16,23 @@
           <span class="row-number">{{ index + 1 }}</span>
         </template>
 
-        <template #item.id="{ item }">
-          <span class="transaction-id">{{ item.id }}</span>
+        <template #item.name="{ item }">
+          <span class="transaction-id">{{ item.name }}</span>
         </template>
 
-        <template #item.client_name="{ item }">
-          <span class="comment-text">{{ item.client_name }}</span>
+        <template #item.sip_name="{ item }">
+          <span class="comment-text">{{ item.sip_name }}</span>
         </template>
-        <template #item.recording_url="{ item }">
-          <div class="d-flex align-center">
-            <audio controls style="width: 400px;">
-              <source :src="item.recording_url" type="audio/wav">
-              Ваш браузер не поддерживает воспроизведение аудио.
-            </audio>
-            <v-btn
-              variant="plain"
-              color="primary"
-              size="large"
-              :href="item.recording_url"
-              download
-            >
-              <v-icon>mdi-download</v-icon>
-            </v-btn>
-          </div>
+        <template #item.channel_count="{ item }">
+          <span class="comment-text">{{ item.channel_count }}</span>
         </template>
-
-        <template #item.phone="{ item }">
-          <span class="amount-text">{{ item.phone }}</span>
-        </template>
-        <template #item.status="{ item }">
+        <template #item.status_ru="{ item }">
           <v-chip
-            :color="getStatusColor(item.status)"
-            :style="getChipStyle(item.status)"
+            :style="{
+              backgroundColor: getStatusColor(item.status_ru),
+              color: getChipStyle(item.status_ru),
+              borderRadius: '6px'
+            }"
             size="small"
             variant="flat"
             style="border-radius: 6px;"
@@ -56,10 +41,10 @@
           </v-chip>
         </template>
         <template #item.start_date="{ item }">
-          <div class="d-flex flex-column gap-2  ">
-            <span class="date-text">Дата начала:{{ item.start_date }}</span>
-            <span class="date-text">Дата окончания:{{ item.end_date }}</span>
-          </div>
+          <span class="date-text">{{ item.start_date }}</span>
+        </template>
+        <template #item.end_date="{ item }">
+          <span class="date-text">{{ item.end_date }}</span>
         </template>
       </v-data-table>
   
@@ -112,12 +97,12 @@ const filter = ref({
 })
 const headers = [
   { title: '#', key: 'index', width: '60px', sortable: false },
-  { title: 'ID', key: 'id', width: '100px' },
-  { title: 'Имя клиента', key: 'client_name', width: '200px' },
-  { title: 'Запись звонка', key: 'recording_url', width: '400px' },
-  { title: 'Телефон', key: 'phone', width: '200px' },
-  { title: 'Дата', key: 'start_date', width: '300px' },
+  { title: 'Имя', key: 'name', width: '400px' },
+  { title: 'Имя Sip', key: 'sip_name', width: '300px' },
+  { title: 'Количество каналов', key: 'channel_count', width: '100px' },
   { title: 'Статус', key: 'status_ru', width: '200px' },
+  { title: 'Дата начала', key: 'start_date', width: '300px' },
+  { title: 'Дата окончания', key: 'end_date', width: '300px' },
 ]
 const statusOptions = [
   'CREATED',
@@ -131,76 +116,46 @@ const statusOptions = [
 ]
 
 watch([filter.value.page, filter.value.per_page], () => {
-  fetchOutgoingCall()
+  FetchCollections()
 })
-const fetchOutgoingCall = async () => {
+const FetchCollections = async () => {
   isLoading.value = true
   try {
-    await callStore.fetchOutgoingCalls({...filter.value })
+    await callStore.FetchCollections({...filter.value })
   } finally {
     isLoading.value = false
   }
 }
 
 const onPageChange = (newPage: number) => {
-  fetchOutgoingCall()
+  FetchCollections()
 }
 const getStatusColor = (status: string) => {
     switch (status) {
-      case 'CREATED': return '#FFF2DD'
-      case 'FAILED': return '#FEF2F2'
-      case 'NOT_FOUND': return '#FEF2F2'
-      case 'EXPIRED': return '#FEF2F2'
-      case 'TRANSMITTED': return '#E2FBE8'
-      case 'DELIVERED': return '#E2FBE8'
-      case 'REJECTED': return '#E2FBE8'
-      case 'NOT_DELIVERED': return '#E2FBE8'
-      default: return '#E2E3E5'
+      case "Ожидает" : return '#FFF2DD';
+      case "Занято": return '#E2FBE8';
+      case "Выполняется": return '#FFF2DD'
+      case "Приостановлен": return '#E2FBE8'
+      case "Отменен": return '#FEF2F2'
+      case "Завершен": return '#E2FBE8'
+      case "Ошибка": return '#FEF2F2'
+      default: return '#fff'
     }
   }
 const getChipStyle = (status: string) => {
   switch (status) {
-    case 'CREATED': return 'color: #B17700';
-    case 'FAILED': return 'color: #DC2626'
-    case 'NOT_FOUND': return 'color: #DC2626'
-    case 'EXPIRED': return 'color: #DC2626'
-    case 'TRANSMITTED': return 'color: #1B3822'
-    case 'DELIVERED': return 'color: #1B3822'
-    case 'REJECTED': return 'color: #1B3822'
-    case 'NOT_DELIVERED': return 'color: #1B3822'
-    default: return 'color: #1B3822'
-  }
-};
-const getStatus = (status: string) => {
-  switch (status) {
-    case 'CREATED': return 'Новый';
-    case 'FAILED': return 'Неуспешно'
-    case 'NOT_FOUND': return 'Неуспешно'
-    case 'EXPIRED': return 'Неуспешно'
-    case 'TRANSMITTED': return 'Успешно'
-    case 'DELIVERED': return 'Успешно'
-    case 'REJECTED': return 'Успешно'
-    case 'NOT_DELIVERED': return 'Успешно'
-    default: return status
+    case "Ожидает" : return '#B17700';
+    case "Занято": return '#1B3822';
+    case "Выполняется": return '#B17700'
+    case "Приостановлен": return '#1B3822'
+    case "Отменен": return '#DC2626'
+    case "Завершен": return '#1B3822'
+    case "Ошибка": return '#DC2626'
+    default: return '#8A8A8A'
   }
 };
 
 onMounted(() => {
-  fetchOutgoingCall()
+  FetchCollections()
 })
 </script>
-
-<style>
-/* .pagination-text{
-  white-space: nowrap!important;
-}
-el-select.pagination-select {
-  width: 70px!important;
-}
-.call-container .el-select--large{
-  width: 90%;
-}
-.call-container .el-select--large .el-select__wrapper {
-  width: 100px!important;
-} */
-</style>

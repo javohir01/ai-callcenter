@@ -8,9 +8,16 @@ export async function outgoingCalls(params) {
   })
 }
 
-export async function IncomingCallStats(params) {
+export async function IncomingCalls(params) {
   return axiosInstance({
-    url: `/dashboard/stats`,
+    url: `/calls/incoming`,
+    method: 'GET',
+    params
+  })
+}
+export async function collections(params) {
+  return axiosInstance({
+    url: `/campaigns`,
     method: 'GET',
     params
   })

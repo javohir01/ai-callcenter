@@ -15,6 +15,21 @@
             <img src="/img/search.svg" style="width: 18px; height: 18px; margin-right: 6px;" />
           </template>
         </el-input>
+        <el-select
+          v-model="filter.status"
+          placeholder="Все статусы"
+          size="large"
+          class="status-select"
+          @update:modelValue="fetchOutgoingCall"
+          clearable
+        >
+          <el-option
+            v-for="item in statusOptions"
+            :key="item + 'page'"
+            :label="item"
+            :value="item"
+          />
+        </el-select>
       </div>
     </v-row>
 
@@ -62,13 +77,15 @@
         <template #item.phone="{ item }">
           <span class="amount-text">{{ item.phone }}</span>
         </template>
-        <template #item.status="{ item }">
+        <template #item.status_ru="{ item }">
           <v-chip
-            :color="getStatusColor(item.status)"
-            :style="getChipStyle(item.status)"
+            :style="{
+              backgroundColor: getStatusColor(item.status_ru),
+              color: getChipStyle(item.status_ru),
+              borderRadius: '6px'
+            }"
             size="small"
             variant="flat"
-            style="border-radius: 6px;"
           >
             {{ item.status_ru }}
           </v-chip>
@@ -139,15 +156,18 @@ const headers = [
   { title: 'Статус', key: 'status_ru', width: '200px' },
 ]
 const statusOptions = [
-  'CREATED',
-  'FAILED',
-  'NOT_FOUND',
-  'EXPIRED',
-  'TRANSMITTED',
-  'DELIVERED',
-  'REJECTED',
-  'NOT_DELIVERED'
+  "Ожидает",
+  "Звонит", 
+  "Не отвечен",
+  "Прерван",
+  "Завершен",
+  "Отменен",
+  "Выполняется",
+  "Приостановлен",
+  "Занято",
+  "Ошибка"
 ]
+
 
 watch([filter.value.page, filter.value.per_page], () => {
   fetchOutgoingCall()
@@ -166,41 +186,32 @@ const onPageChange = (newPage: number) => {
 }
 const getStatusColor = (status: string) => {
     switch (status) {
-      case 'CREATED': return '#FFF2DD'
-      case 'FAILED': return '#FEF2F2'
-      case 'NOT_FOUND': return '#FEF2F2'
-      case 'EXPIRED': return '#FEF2F2'
-      case 'TRANSMITTED': return '#E2FBE8'
-      case 'DELIVERED': return '#E2FBE8'
-      case 'REJECTED': return '#E2FBE8'
-      case 'NOT_DELIVERED': return '#E2FBE8'
+      case "Ожидает" : return '#FFF2DD';
+      case "Звонит": return '#FEF2F2';
+      case "Не отвечен": return '#E2FBE8'
+      case "Прерван": return '#E2FBE8'
+      case "Завершен": return '#FEF2F2'
+      case "Отменен": return '#E2FBE8'
+      case "Выполняется": return '#FEF2F2'
+      case "Приостановлен": return '#FEF2F2'
+      case "Занято": return '#E2FBE8'
+      case "Ошибка": return '#E2FBE8'
       default: return '#E2E3E5'
     }
   }
 const getChipStyle = (status: string) => {
   switch (status) {
-    case 'CREATED': return 'color: #B17700';
-    case 'FAILED': return 'color: #DC2626'
-    case 'NOT_FOUND': return 'color: #DC2626'
-    case 'EXPIRED': return 'color: #DC2626'
-    case 'TRANSMITTED': return 'color: #1B3822'
-    case 'DELIVERED': return 'color: #1B3822'
-    case 'REJECTED': return 'color: #1B3822'
-    case 'NOT_DELIVERED': return 'color: #1B3822'
-    default: return 'color: #1B3822'
-  }
-};
-const getStatus = (status: string) => {
-  switch (status) {
-    case 'CREATED': return 'Новый';
-    case 'FAILED': return 'Неуспешно'
-    case 'NOT_FOUND': return 'Неуспешно'
-    case 'EXPIRED': return 'Неуспешно'
-    case 'TRANSMITTED': return 'Успешно'
-    case 'DELIVERED': return 'Успешно'
-    case 'REJECTED': return 'Успешно'
-    case 'NOT_DELIVERED': return 'Успешно'
-    default: return status
+    case "Ожидает" : return '#B17700';
+    case "Звонит": return '#1B3822';
+    case "Не отвечен": return '#DC2626'
+    case "Прерван": return '#DC2626'
+    case "Завершен": return '#1B3822'
+    case "Отменен": return '#DC2626'
+    case "Выполняется": return '#1B3822'
+    case "Приостановлен": return '#1B3822'
+    case "Занято": return '#DC2626'
+    case "Ошибка": return '#DC2626'
+    default: return '#1B3822'
   }
 };
 
