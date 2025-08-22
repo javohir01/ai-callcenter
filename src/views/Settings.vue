@@ -1,28 +1,10 @@
 <template>
   <v-container fluid v-loading="isLoading" class="call-container">
-    <ByCalls />
-    <v-row class="mt-5">
-      <div class="filter-bar">
-        <el-input
-          v-model.lazy="filter.phoneNumber"
-          class="filter-search"
-          size="large"
-          placeholder="Поиск"
-          clearable
-          @keyup.enter="fetchOutgoingCall"
-        >
-          <template #prepend>
-            <img src="/img/search.svg" style="width: 18px; height: 18px; margin-right: 6px;" />
-          </template>
-        </el-input>
-      </div>
-    </v-row>
-
     <!-- Data Table -->
     <div class="table-container">
       <v-data-table
         :headers="headers"
-        :items="callStore?.outgoingCalls?.calls"
+        :items="callStore?.Settings?.calls"
         :loading="callStore.loading"
         :items-per-page="filter.per_page"
         :page.sync="filter.page"
@@ -40,23 +22,6 @@
 
         <template #item.client_name="{ item }">
           <span class="comment-text">{{ item.client_name }}</span>
-        </template>
-        <template #item.recording_url="{ item }">
-          <div class="d-flex align-center">
-            <audio controls style="width: 400px;">
-              <source :src="item.recording_url" type="audio/wav">
-              Ваш браузер не поддерживает воспроизведение аудио.
-            </audio>
-            <v-btn
-              variant="plain"
-              color="primary"
-              size="large"
-              :href="item.recording_url"
-              download
-            >
-              <v-icon>mdi-download</v-icon>
-            </v-btn>
-          </div>
         </template>
 
         <template #item.phone="{ item }">
@@ -98,11 +63,11 @@
                 :value="item"
               />
             </el-select>
-          <span class="pagination-text d-flex">из {{ callStore?.outgoingCalls?.total }}</span>
+          <span class="pagination-text d-flex">из {{ callStore?.Settings?.total }}</span>
         </div>
         <v-pagination
           v-model="filter.page"
-          :length="callStore?.outgoingCalls?.total / filter.per_page + 1"
+          :length="callStore?.Settings?.total / filter.per_page + 1"
           :total-visible="5"
           color="primary"
           size="small"
@@ -132,37 +97,27 @@ const filter = ref({
 const headers = [
   { title: '#', key: 'index', width: '60px', sortable: false },
   { title: 'ID', key: 'id', width: '100px' },
-  { title: 'Имя клиента', key: 'client_name', width: '200px' },
-  { title: 'Запись звонка', key: 'recording_url', width: '400px' },
-  { title: 'Телефон', key: 'phone', width: '200px' },
-  { title: 'Дата', key: 'start_date', width: '300px' },
+  { title: 'Имя', key: 'client_name', width: '200px' },
+  { title: 'Конечная точка', key: 'recording_url', width: '400px' },
+  { title: 'Имя пользователя', key: 'phone', width: '200px' },
+  { title: 'Количество каналов', key: 'start_date', width: '300px' },
   { title: 'Статус', key: 'status_ru', width: '200px' },
-]
-const statusOptions = [
-  'CREATED',
-  'FAILED',
-  'NOT_FOUND',
-  'EXPIRED',
-  'TRANSMITTED',
-  'DELIVERED',
-  'REJECTED',
-  'NOT_DELIVERED'
 ]
 
 watch([filter.value.page, filter.value.per_page], () => {
-  fetchOutgoingCall()
+  fetchSettings()
 })
-const fetchOutgoingCall = async () => {
+const fetchSettings = async () => {
   isLoading.value = true
   try {
-    await callStore.fetchOutgoingCalls({...filter.value })
+    // await callStore.fetchSettings({...filter.value })
   } finally {
     isLoading.value = false
   }
 }
 
 const onPageChange = (newPage: number) => {
-  fetchOutgoingCall()
+  fetchSettings()
 }
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -190,101 +145,10 @@ const getChipStyle = (status: string) => {
     default: return 'color: #1B3822'
   }
 };
-const getStatus = (status: string) => {
-  switch (status) {
-    case 'CREATED': return 'Новый';
-    case 'FAILED': return 'Неуспешно'
-    case 'NOT_FOUND': return 'Неуспешно'
-    case 'EXPIRED': return 'Неуспешно'
-    case 'TRANSMITTED': return 'Успешно'
-    case 'DELIVERED': return 'Успешно'
-    case 'REJECTED': return 'Успешно'
-    case 'NOT_DELIVERED': return 'Успешно'
-    default: return status
-  }
-};
-
 onMounted(() => {
-  fetchOutgoingCall()
+  fetchSettings()
 })
 </script>
 
 <style>
-.filter-bar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  padding: 10px 20px;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.filter-date :deep(.el-input__wrapper),
-.filter-search :deep(.el-input__wrapper) {
-  background: #fff;
-  border: none!important;
-  box-shadow: none!important;
-  border-radius: 14px;
-  padding-left: 0;
-  padding-right: 12px;
-}
-.filter-date :deep(.el-input__prefix),
-.filter-search :deep(.el-input__prefix) {
-  background: transparent;
-  border: none!important;
-}
-.filter-bar .el-date-editor .el-input__wrapper,
-.filter-bar .el-input__wrapper {
-  background: transparent;
-  border: none!important;
-  box-shadow: none!important;
-  border-radius: 14px;
-  padding-left: 0;
-  padding-right: 12px;
-}
-.filter-date :deep(.el-input__inner),
-.filter-search :deep(.el-input__inner) {
-  background: transparent;
-  border: none!important;
-  box-shadow: none;
-}
-.filter-bar .el-input-group__prepend{
-  box-shadow: none!important;
-  padding: 0;
-}
-.filter-bar .el-date-editor.el-input__wrapper{
-  box-shadow: none !important;
-  padding: 0;
-  width: 140% !important;
-}
-.pagination-text{
-  white-space: nowrap!important;
-}
-el-select.pagination-select {
-  width: 70px!important;
-}
-.call-container .el-select--large{
-  width: 90%;
-}
-.call-container .el-select--large .el-select__wrapper {
-  width: 100px!important;
-}
-/* audio {
-  width: 150px;
-  height: 30px;
-  border-radius: 4px;
-  background-color: #f5f5f5;
-}
-audio::-webkit-media-controls-panel {
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
-audio::-webkit-media-controls-play-button {
-  background-color: #4CAF50;
-  border-radius: 50%;
-}
-audio::-webkit-media-controls-current-time-display,
-audio::-webkit-media-controls-time-remaining-display {
-  color: #333;
-} */
 </style>

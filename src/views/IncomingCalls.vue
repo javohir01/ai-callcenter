@@ -1,6 +1,8 @@
 <template>
   <v-container fluid v-loading="isLoading" class="call-container">
-    <ByCalls />
+    <div>
+      <IncomingCallCards />  
+    </div>
     <v-row class="mt-5">
       <div class="filter-bar">
         <el-input
@@ -19,7 +21,7 @@
     </v-row>
 
     <!-- Data Table -->
-    <div class="table-container">
+    <!-- <div class="table-container">
       <v-data-table
         :headers="headers"
         :items="callStore?.outgoingCalls?.calls"
@@ -109,14 +111,14 @@
           @update:modelValue="onPageChange"
         />
       </div>
-    </div>
+    </div> -->
   </v-container>
 </template>
 
 <script setup lang="ts">
 import { ref, h, watch, onMounted } from 'vue'
 import {useCallStore} from "@/stores/call";
-import ByCalls from '@/components/ByCalls.vue';
+import IncomingCallCards from '@/components/IncomingCallCards.vue';
 
 const callStore = useCallStore()
 

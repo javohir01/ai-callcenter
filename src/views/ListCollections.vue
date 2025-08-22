@@ -1,23 +1,5 @@
 <template>
   <v-container fluid v-loading="isLoading" class="call-container">
-    <ByCalls />
-    <v-row class="mt-5">
-      <div class="filter-bar">
-        <el-input
-          v-model.lazy="filter.phoneNumber"
-          class="filter-search"
-          size="large"
-          placeholder="Поиск"
-          clearable
-          @keyup.enter="fetchOutgoingCall"
-        >
-          <template #prepend>
-            <img src="/img/search.svg" style="width: 18px; height: 18px; margin-right: 6px;" />
-          </template>
-        </el-input>
-      </div>
-    </v-row>
-
     <!-- Data Table -->
     <div class="table-container">
       <v-data-table
@@ -116,7 +98,6 @@
 <script setup lang="ts">
 import { ref, h, watch, onMounted } from 'vue'
 import {useCallStore} from "@/stores/call";
-import ByCalls from '@/components/ByCalls.vue';
 
 const callStore = useCallStore()
 
@@ -210,54 +191,7 @@ onMounted(() => {
 </script>
 
 <style>
-.filter-bar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  padding: 10px 20px;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.filter-date :deep(.el-input__wrapper),
-.filter-search :deep(.el-input__wrapper) {
-  background: #fff;
-  border: none!important;
-  box-shadow: none!important;
-  border-radius: 14px;
-  padding-left: 0;
-  padding-right: 12px;
-}
-.filter-date :deep(.el-input__prefix),
-.filter-search :deep(.el-input__prefix) {
-  background: transparent;
-  border: none!important;
-}
-.filter-bar .el-date-editor .el-input__wrapper,
-.filter-bar .el-input__wrapper {
-  background: transparent;
-  border: none!important;
-  box-shadow: none!important;
-  border-radius: 14px;
-  padding-left: 0;
-  padding-right: 12px;
-}
-.filter-date :deep(.el-input__inner),
-.filter-search :deep(.el-input__inner) {
-  background: transparent;
-  border: none!important;
-  box-shadow: none;
-}
-.filter-bar .el-input-group__prepend{
-  box-shadow: none!important;
-  padding: 0;
-}
-.filter-bar .el-date-editor.el-input__wrapper{
-  box-shadow: none !important;
-  padding: 0;
-  width: 140% !important;
-}
-.pagination-text{
+/* .pagination-text{
   white-space: nowrap!important;
 }
 el-select.pagination-select {
@@ -268,23 +202,5 @@ el-select.pagination-select {
 }
 .call-container .el-select--large .el-select__wrapper {
   width: 100px!important;
-}
-/* audio {
-  width: 150px;
-  height: 30px;
-  border-radius: 4px;
-  background-color: #f5f5f5;
-}
-audio::-webkit-media-controls-panel {
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
-audio::-webkit-media-controls-play-button {
-  background-color: #4CAF50;
-  border-radius: 50%;
-}
-audio::-webkit-media-controls-current-time-display,
-audio::-webkit-media-controls-time-remaining-display {
-  color: #333;
 } */
 </style>

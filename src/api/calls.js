@@ -8,19 +8,10 @@ export async function outgoingCalls(params) {
   })
 }
 
-export async function smsFrame(params) {
+export async function IncomingCallStats(params) {
   return axiosInstance({
-    url: `/sms-templates`,
+    url: `/dashboard/stats`,
     method: 'GET',
     params
-  })
-}
-
-export async function exportSmsFrame(params) { 
-  return axiosInstance({
-    url: `/sms-templates/export`,
-    method: 'GET',
-    params,
-    responseType: 'blob'
   })
 }

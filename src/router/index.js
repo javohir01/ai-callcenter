@@ -23,17 +23,17 @@ const router = createRouter({
         {
           path: '/incoming-calls',
           name: 'Входящие звонки',
-          component: () => import('@/views/StatisticsView.vue')
+          component: () => import('@/views/IncomingCalls.vue')
         },
         {
           path: '/list-collections',
           name: 'Список коллекций',
-          component: () => import('@/views/SmsFrames.vue')
+          component: () => import('@/views/ListCollections.vue')
         },
         {
           path: '/settings',
           name: 'SIP Настройки',
-          component: () => import('@/views/SmsFrames.vue')
+          component: () => import('@/views/Settings.vue')
         }
       ]
     }

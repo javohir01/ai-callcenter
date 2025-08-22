@@ -1,23 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref,reactive } from 'vue'
 import {
-  outgoingCalls as outgoingCallsApi
+  outgoingCalls as outgoingCallsApi,
+  IncomingCallStats as IncomingCallStatsApi
 } from '@/api/calls' 
 
 export const useCallStore = defineStore('call', () => {
   const outgoingCalls = ref({})
+  const incomingCallStatistics = ref({})
   const loading = ref(false)
   const error = ref(null)
-  const statuses = reactive({
-    'CREATED': 'Создано',
-    'FAILED': 'Ошибка',
-    'NOT_FOUND': 'Не удалось',
-    'EXPIRED': 'Истекло',
-    'TRANSMITTED': 'Отправлено',
-    'DELIVERED': 'Доставлено',
-    'REJECTED': 'Отклонено',
-    'NOT_DELIVERED': 'Не доставлено'
-  })
   
   const fetchOutgoingCalls = async (params: any) => {
     loading.value = true
@@ -32,10 +24,26 @@ export const useCallStore = defineStore('call', () => {
       loading.value = false
     }
   }
+  const IncomingCallStats = async (params: any) => {
+    loading.value = true
+    try {
+      const response = await IncomingCallStatsApi(params)
+
+      if (response) {
+        incomingCallStatistics.value = response || {}
+      }
+    } catch (err) {
+      error.value = err
+    } finally {
+      loading.value = false
+    }
+  }
   return {
     loading,
     error,
     outgoingCalls,
-    fetchOutgoingCalls
+    incomingCallStatistics,
+    fetchOutgoingCalls,
+    IncomingCallStats
   }
 })
