@@ -17,22 +17,21 @@ export async function create(data) {
 }
 export async function show(params) {
   return axiosInstance({
-    url: `/sip/${params.sip_uuid}`,
+    url: `/sip/${params.uuid}`,
     method: 'GET',
     params
   })
 }
 export async function update(params) {
   return axiosInstance({
-    url: `/sip/${params.sip_uuid}`,
+    url: `/sip/${params.uuid}`,
     method: 'PUT',
-    params
+    data: params
   })
 }
-export async function destroy(params) {
+export async function destroy(uuid) {
   return axiosInstance({
-    url: `/sip/${params.sip_uuid}`,
+    url: `/sip/${uuid}`,
     method: 'DELETE',
-    params
   })
 }

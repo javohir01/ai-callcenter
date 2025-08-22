@@ -178,9 +178,10 @@ const openDeleteDialog = (item: any) => {
 
 const confirmDelete = async () => {
   if (!deleteTarget.value) return;
+  console.log('Deleting SIP with ID:', deleteTarget.value.uuid); // Debugging line
   loading.value = true;
   try {
-    await sipStore.destroy(deleteTarget.value.id);
+    await sipStore.destroy(deleteTarget.value.uuid);
     isDeleteDialog.value = false;
     fetchData();
   } finally {
