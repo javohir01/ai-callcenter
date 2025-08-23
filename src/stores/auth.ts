@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { login as apiLogin, getMe } from '@/api/auth.js'
+import { login as apiLogin,verifyCode as verifyCodeApi, getMe } from '@/api/auth.js'
 import { setAccessToken } from "@/utils/localStorage"
 
 const getLocal = <T>(key: string, fallback: T): T => {
@@ -43,6 +43,18 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await apiLogin(email, password)
       const data = response?.data
       if (data?.access_token) {
+        return true
+      }
+    } catch (e) {
+      console.error('Login xatolik:', e)
+    }
+    return false
+  }
+  const verifyCode = async (phone: string, code: string) => {
+    try {
+      const response = await verifyCodeApi(phone, code)
+      const data = response?.data
+      if (data?.access_token) {
         isAuthenticated.value = true
         setAccessToken(data.access_token)
         await fetchUser()
@@ -71,6 +83,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     user,
     login,
+    verifyCode,
     logout,
     fetchUser
   }

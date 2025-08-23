@@ -14,47 +14,78 @@
             <p class="welcome-title">Пожалуйста, вводите в Ваш аккаунт</p>
           </div>
           
-          <v-form @submit.prevent="handleLogin" class="login-form">
-            <div class="input-group">
-              <label class="input-label">Номер телефона*</label>
-              <v-text-field
-                v-model="phone"
-                placeholder="Ваш телефон"
-                variant="outlined"
-                class="custom-input"
-                hide-details="auto"
-                required
-              />
+          <v-form @submit.prevent="handleSubmit" class="login-form">
+            <div v-if="step === 1">
+              <div class="input-group">
+                <label class="input-label">Номер телефона*</label>
+                <v-text-field
+                  v-model="phone"
+                  placeholder="Ваш телефон"
+                  variant="outlined"
+                  class="custom-input"
+                  hide-details="auto"
+                  required
+                />
+              </div>
+              
+              <div class="input-group">
+                <label class="input-label">Пароль*</label>
+                <v-text-field
+                  v-model="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  placeholder="••••••••••••"
+                  variant="outlined"
+                  :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                  @click:append-inner="showPassword = !showPassword"
+                  :rules="passwordRules"
+                  class="custom-input"
+                  hide-details="auto"
+                  required
+                />
+              </div>
+              
+              <v-btn
+                type="submit"
+                color="primary"
+                size="large"
+                block
+                class="login-btn"
+                :loading="loading"
+              >
+                Войти
+              </v-btn>
+            </div>
+
+            <div v-if="step === 2">
+              <div class="input-group">
+                <label class="input-label">Код подтверждения*</label>
+                <v-text-field
+                  v-model="otp"
+                  placeholder="Введите код"
+                  variant="outlined"
+                  class="custom-input"
+                  hide-details="auto"
+                  required
+                  type="text"
+                  maxlength="6"
+                />
+              </div>
+              
+              <v-btn
+                type="submit"
+                color="primary"
+                size="large"
+                block
+                class="login-btn"
+                :loading="loading"
+              >
+                Подтвердить
+              </v-btn>
+              
+              <p class="resend-link" @click="resendOTP">Не получили код? Отправить повторно</p>
             </div>
             
-            <div class="input-group">
-              <label class="input-label">Пароль*</label>
-              <v-text-field
-                v-model="password"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="••••••••••••"
-                variant="outlined"
-                :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append-inner="showPassword = !showPassword"
-                :rules="passwordRules"
-                class="custom-input"
-                hide-details="auto"
-                required
-              />
-            </div>
-            
-            <v-btn
-              type="submit"
-              color="primary"
-              size="large"
-              block
-              class="login-btn"
-              :loading="loading"
-            >
-              Войти
-            </v-btn>
-            
-            <div class="remember-section">
+            <div class="remember-section" v-if="step === 1">
               <v-checkbox
                 v-model="rememberMe"
                 label="Запомнить меня"
@@ -79,41 +110,50 @@ const authStore = useAuthStore()
 
 const phone = ref('')
 const password = ref('')
+const otp = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
 const rememberMe = ref(false)
-
+const step = ref(1) // 1: Login, 2: OTP
 
 const passwordRules = [
   (v: string) => !!v || 'Пароль обязателен',
   (v: string) => v.length >= 6 || 'Пароль должен содержать минимум 6 символов',
 ]
 
-const handleLogin = async () => {
+const handleSubmit = async () => {
   loading.value = true
-  console.log('Login attempt:', { phone: phone.value, password: password.value })
 
   try {
-    const success = await authStore.login(phone.value, password.value)
-
-    if (success) {
-      ElMessage({
-        message: 'Вы успешно вошли в систему!',
-        type: 'success',
-        duration: 5000,
-        showClose: true,
-      })
-      router.push('/outgoing-calls')
-    } else {
-      ElMessage({
-        message: 'Не удалось войти. Проверьте свои учетные данные.',
-        type: 'error',
-        duration: 5000,
-        showClose: true,
-      })
+    if (step.value === 1) {
+      const otpRequested = await authStore.login(phone.value, password.value) 
+      if (otpRequested) {
+        ElMessage({
+          message: 'Код подтверждения отправлен на ваш номер.',
+          type: 'success',
+          duration: 5000,
+          showClose: true,
+        })
+        step.value = 2
+      } else {
+        throw new Error('Неверные учетные данные.')
+      }
+    } else if (step.value === 2) {
+      const success = await authStore.verifyCode(phone.value, otp.value)
+      if (success) {
+        ElMessage({
+          message: 'Вы успешно вошли в систему!',
+          type: 'success',
+          duration: 5000,
+          showClose: true,
+        })
+        router.push('/outgoing-calls')
+      } else {
+        throw new Error('Неверный код подтверждения.')
+      }
     }
   } catch (error) {
-    const errorMsg = error?.response?.data?.message || error.message || 'Произошла ошибка при входе'
+    const errorMsg = error?.response?.data?.message || error.message || 'Произошла ошибка'
     ElMessage({
       message: errorMsg,
       type: 'error',
@@ -125,6 +165,27 @@ const handleLogin = async () => {
   }
 }
 
+const resendOTP = async () => {
+  loading.value = true
+  try {
+    await authStore.verifyCode(phone.value, password.value) // Resend using same credentials
+    ElMessage({
+      message: 'Код отправлен повторно.',
+      type: 'info',
+      duration: 5000,
+      showClose: true,
+    })
+  } catch (error) {
+    ElMessage({
+      message: 'Ошибка при повторной отправке кода.',
+      type: 'error',
+      duration: 5000,
+      showClose: true,
+    })
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -350,7 +411,17 @@ const handleLogin = async () => {
 :deep(.remember-checkbox .v-selection-control__input) {
   color: #4F7DF3;
 }
+.resend-link {
+  cursor: pointer;
+  color: #4F7DF3;
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+}
 
+.resend-link:hover {
+  text-decoration: underline;
+}
 /* Responsive Design */
 @media (max-width: 768px) {
   .login-content {

@@ -11,6 +11,16 @@ export async function login(phone, password) {
     }
   })
 }
+export async function verifyCode(phone, code) {
+  return axios({
+    url: `/auth/verify-code`,
+    method: 'POST',
+    data: {
+      phone,
+      code
+    }
+  })
+}
 export async function getMe() {
   return axiosInstance({
     url: `/auth/profile`,
