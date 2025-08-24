@@ -15,6 +15,7 @@
     </div>
     <div style="display: flex; gap: 20px;">
       <VChart :option="statusOption" style="height: 300px; width: 50%;" />
+      <!-- <VChart :option="dayOption" style="height: 300px; width: 50%;" /> -->
       <VChart :option="dayOption" style="height: 300px; width: 50%;" />
     </div>
   </div>
@@ -25,14 +26,14 @@ import { onMounted, ref, reactive, computed, watch } from 'vue';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { PieChart, BarChart } from 'echarts/charts';
+import { PieChart, LineChart, BarChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from 'echarts/components';
 import { graphic } from 'echarts';
 import { useStatisticStore } from "@/stores/statistic.js";
 import { formatDateToIso } from "@/utils/helpers.js";
 import { ElDatePicker } from "element-plus";
 
-use([CanvasRenderer, PieChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
+use([CanvasRenderer, PieChart, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
 
 const statisticStore = useStatisticStore();
 const isLoading = ref(false);
@@ -53,7 +54,7 @@ const statusOption = computed(() => {
       value: item.percentage,
       name: item.label_ru,
       itemStyle: {
-        color: item.status === 'COMPLETED' ? '#4CAF50' : '#F44336'
+        color: item.label_ru === "Завершен" ? '#4CAF50' : '#F44336'
       }
     }));
   }
@@ -94,48 +95,110 @@ const statusOption = computed(() => {
 const dayOption = computed(() => {
   let days = [];
   let callCounts = [];
+  let callDurations = [];
+
   if (dayData && dayData.length > 0) {
     dayData.forEach(item => {
       days.push(item.day);
       callCounts.push(item.call_count);
+      callDurations.push(item.duration);
     });
   }
   return {
     title: [
       {
         text: `Общее количество звонков: ${totalDayCount.value}`,
-        left: 'center',
+        left: 'left',
         top: '5px',
         textStyle: {
           fontSize: 14,
-          fontWeight: 'normal',
-          textAlign: 'center'
+          fontWeight: 'bold'
         }
       }
     ],
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'shadow' }
+      formatter: function(params) {
+        const data = params[0];
+        const day = data.axisValue;
+        const duration = data.value;
+        return `${day}<br/>${duration} минут`;
+      }
     },
     grid: {
       left: '3%',
       right: '4%',
       bottom: '3%',
+      top: '60px',
       containLabel: true
     },
     xAxis: {
       type: 'category',
-      data: days
+      data: days,
+      axisLine: {
+        lineStyle: {
+          color: '#ccc'
+        }
+      },
+      axisLabel: {
+        color: '#666'
+      }
     },
     yAxis: {
-      type: 'value'
+      type: 'value',
+       min: 0,
+      max: 25,
+      interval: 5,
+      axisLine: {
+        show: false
+      },
+      axisTick: {
+        show: false
+      },
+      splitLine: {
+        lineStyle: {
+          type: 'dashed',
+          color: '#eee'
+        }
+      }
     },
     series: [
-      {
-        type: 'bar',
-        data: callCounts,
+            {
+        type: 'line',
+        data: callDurations,
+        smooth: true,
+        symbol: 'emptyCircle',
+        symbolSize: 8,
         itemStyle: {
-          color: '#2196F3'
+          color: '#5470c6'
+        },
+        lineStyle: {
+          width: 3,
+          color: '#5470c6'
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              {
+                offset: 0,
+                color: 'rgba(84, 112, 198, 0.3)'
+              },
+              {
+                offset: 1,
+                color: 'rgba(84, 112, 198, 0.1)'
+              }
+            ]
+          }
+        },
+        markPoint: {
+          data: [
+            { type: 'max', name: 'Максимум' }
+          ]
         }
       }
     ]

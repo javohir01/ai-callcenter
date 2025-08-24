@@ -6,9 +6,9 @@
           <img :src="card.icon" alt="">
           <div class="card-title">{{ card.title }}</div>
           <div class="card-value">{{ card.value }}</div>
-          <div :class="['card-change', card.change > 0 ? 'positive' : 'negative']">
+          <!-- <div :class="['card-change', card.change > 0 ? 'positive' : 'negative']">
             {{ card.change }} {{ card.percentage }}%
-          </div>
+          </div> -->
         </v-card-text>
       </v-card>
     </div>
@@ -22,7 +22,7 @@ import { useStatisticStore } from '@/stores/statistic';
 const statisticStore = useStatisticStore();
 const isLoading = ref(false);
 const data = ref(null);
-const cardsData = ref([
+const cardsData = computed(() => [
   {
     icon: 'img/incoming/total.svg', // Placeholder for phone icon
     title: 'Всего звонков сегодня',
@@ -70,11 +70,12 @@ const fetchIncomingCallStats = async () => {
   try {
     const res = await statisticStore.FetchIncomingCallStats()
     console.log('res')
-    console.log(res)
+    console.log(res?.data)
     console.log(statisticStore.incomingCallStatistics)
     if (res?.data) {
       data.value = res.data || {}
     }
+    console.log(data.value.answered_calls)
   } finally {
     isLoading.value = false
   }
