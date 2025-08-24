@@ -43,6 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await apiLogin(email, password)
       const data = response?.data
       if (data?.access_token) {
+        setAccessToken(data.access_token)
         return true
       }
     } catch (e) {
@@ -54,9 +55,9 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await verifyCodeApi(phone, code)
       const data = response?.data
-      if (data?.access_token) {
+      console.log('Verify response:', response)
+      if (data) {
         isAuthenticated.value = true
-        setAccessToken(data.access_token)
         await fetchUser()
         setLocal('isAuthenticated', true)
         setLocal('user', user.value)

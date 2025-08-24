@@ -78,15 +78,26 @@
         </el-row>       
       </el-form>
       <template #footer>
-        <el-button class="cancel-button" @click="isFormDialog = false">Отмена</el-button>
-        <el-button type="primary" class="add-button" @click="handleSave">Добавлять</el-button>
+        <el-button 
+          class="cancel-button" 
+          @click="isFormDialog = false"
+        > 
+          Отмена
+        </el-button>
+        <el-button 
+          type="primary" 
+          class="add-button" 
+          @click="handleSave"
+        >
+          {{ form.id ? 'Редактировать' : 'Добавлять' }}
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 🔹 Delete Dialog -->
     <el-dialog
       v-model="isDeleteDialog"
-      title="O‘chirishni tasdiqlash"
+      title="Подтвердите удаление"
       width="400px"
     >
       <span>Вы хотите удалить {{ deleteTarget?.name }}?</span>

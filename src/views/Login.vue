@@ -140,6 +140,7 @@ const handleSubmit = async () => {
       }
     } else if (step.value === 2) {
       const success = await authStore.verifyCode(phone.value, otp.value)
+      console.log(success)
       if (success) {
         ElMessage({
           message: 'Вы успешно вошли в систему!',
