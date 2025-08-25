@@ -124,7 +124,8 @@ const menuItems = computed(() => {
     { title: 'Исходящие звонки', icon: '/img/sidebar/out-call.svg', to: '/outgoing-calls', show: true },
     { title: 'Входящие звонки', icon: '/img/sidebar/in-call.svg', to: '/incoming-calls', show: true },
     { title: 'Список коллекций', icon: '/img/sidebar/list.svg', to: '/list-collections', show: true },
-    { title: 'SIP Настройки', icon: '/img/sidebar/setting.svg', to: '/settings', show: true },
+    { title: 'Обращения', icon: '/img/sidebar/appeal.svg', to: '/appeals', show: true },
+    { title: 'SIP Настройки', icon: '/img/sidebar/list.svg', to: '/list-collections', show: true },
   ]
   return items.filter(i => i.show)
 })

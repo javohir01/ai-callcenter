@@ -15,7 +15,6 @@
     </div>
     <div style="display: flex; gap: 20px;">
       <VChart :option="statusOption" style="height: 300px; width: 50%;" />
-      <!-- <VChart :option="dayOption" style="height: 300px; width: 50%;" /> -->
       <VChart :option="dayOption" style="height: 300px; width: 50%;" />
     </div>
   </div>
@@ -61,7 +60,7 @@ const statusOption = computed(() => {
   return {
     title: [
       {
-        text: `Общее количество статусов: ${totalStatusCount.value}`,
+        text: `Общее количество /n статусов: ${totalStatusCount.value}`,
         left: 'center',
         top: 'center',
         textStyle: {
