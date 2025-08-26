@@ -59,7 +59,7 @@
           <span class="comment-text">{{ item.client_name }}</span>
         </template>
         <template #item.recording_url="{ item }">
-          <div class="d-flex align-center">
+          <div class="d-flex align-center p-2">
             <audio controls style="width: 400px;">
               <source :src="item.recording_url" type="audio/wav">
               Ваш браузер не поддерживает воспроизведение аудио.
@@ -151,13 +151,7 @@ const statusOptions = [
   "Ожидает",
   "Звонит", 
   "Не отвечен",
-  "Прерван",
-  "Завершен",
-  "Отменен",
-  "Выполняется",
-  "Приостановлен",
-  "Занято",
-  "Ошибка"
+  "Завершен"
 ]
 
 const headers = [

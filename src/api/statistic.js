@@ -14,3 +14,10 @@ export async function IncomingCallStats(params) {
     params
   })
 }
+export async function appealStats(params) {
+  return axiosInstance({
+    url: `/applications/stats`,
+    method: 'GET',
+    params
+  })
+}

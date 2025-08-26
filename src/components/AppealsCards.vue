@@ -6,9 +6,9 @@
           <img :src="card.icon" alt="">
           <div class="card-title">{{ card.title }}</div>
           <div class="card-value">{{ card.value }}</div>
-          <!-- <div :class="['card-change', card.change > 0 ? 'positive' : 'negative']">
-            {{ card.change }} {{ card.percentage }}%
-          </div> -->
+          <div :class="['card-change', card.percentage ? 'positive' : 'negative']">
+            {{ card.change }}%
+          </div>
         </v-card-text>
       </v-card>
     </div>
@@ -24,57 +24,54 @@ const isLoading = ref(false);
 const data = ref(null);
 const cardsData = computed(() => [
   {
-    icon: 'img/appeals/new-user.svg', // Placeholder for phone icon
+    icon: 'img/appeals/new-user.svg',
     title: 'Новые',
-    value: data.value?.total_calls_today || 0,
-    change: 12.5,
-    percentage: '+',
-    color: '#E3F2FD' // Light blue background
+    value: data.value?.new?.count || 0,
+    change: data.value?.new?.percentage || 0,
+    percentage: data.value?.new?.is_increased,
+    color: '#E3F2FD'
   },
   {
-    icon: 'img/appeals/appeal.svg', // Placeholder for checkmark icon
+    icon: 'img/appeals/appeal.svg',
     title: 'В обработке',
-    value: data.value?.answered_calls || 0,
-    change: -12.5,
-    percentage: '',
-    color: '#E3F2FD' // Light blue background
+    value: data.value?.in_progress?.count || 0,
+    change: data.value?.in_progress?.percentage || 0,
+    percentage: data.value?.in_progress?.is_increased,
+    color: '#E3F2FD'
   },
   {
-    icon: 'img/appeals/solved.svg', // Placeholder for clock icon
+    icon: 'img/appeals/solved.svg',
     title: 'Решено',
-    value: data.value?.average_duration || 0,
-    change: 12.5,
-    percentage: '+',
-    color: '#E3F2FD' // Light blue background
+    value: data.value?.resolved?.count || 0,
+    change: data.value?.resolved?.percentage || 0,
+    percentage: data.value?.resolved?.is_increased,
+    color: '#E3F2FD'
   },
   {
-    icon: 'img/appeals/not-solved.svg', // Placeholder for clock icon
+    icon: 'img/appeals/not-solved.svg',
     title: 'Не решено',
-    value: data.value?.transferred_calls || 0,
-    change: 12.5,
-    percentage: '+',
-    color: '#E3F2FD' // Light blue background
+    value: data.value?.closed?.count || 0,
+    change: data.value?.closed?.percentage || 0,
+    percentage: data.value?.closed?.is_increased,
+    color: '#E3F2FD'
   }
 ]);
 
-const fetchIncomingCallStats = async () => {
+const FetchAppealStats = async () => {
   isLoading.value = true
   try {
-    const res = await statisticStore.FetchIncomingCallStats()
-    console.log('res')
-    console.log(res?.data)
-    console.log(statisticStore.incomingCallStatistics)
+    const res = await statisticStore.FetchAppealStats()
     if (res?.data) {
       data.value = res.data || {}
     }
-    console.log(data.value.answered_calls)
+    console.log(data.value)
   } finally {
     isLoading.value = false
   }
 }
 
 onMounted(() => {
-  fetchIncomingCallStats()
+  FetchAppealStats()
 })
 </script>
 

@@ -48,7 +48,7 @@
       v-model="isFormDialog"
       :title="form.id ? 'Редактировать SIP' : 'Добавить SIP'"
     >
-      <el-form :model="form" label-position="top" label-width="140px">
+      <el-form :model="form" label-position="top" v-loading="dialogLoading" label-width="140px">
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="Имя">
@@ -116,6 +116,7 @@ import { useSipStore } from "@/stores/sip";
 const sipStore = useSipStore();
 
 const loading = ref(false);
+const dialogLoading = ref(false);
 const rows = ref<any[]>([]);
 const filter = ref({
   per_page: 10,
@@ -167,14 +168,14 @@ const openEditDialog = (item: any) => {
 
 // 🔹 Save (Create/Update)
 const handleSave = async () => {
-  loading.value = true;
+  dialogLoading.value = true;
   try {
     if (form.id) {
       await sipStore.update(form);
     } else {
       await sipStore.create(form);
     }
-    isFormDialog.value = false;
+    dialogLoading.value = false;
     fetchData();
   } finally {
     loading.value = false;

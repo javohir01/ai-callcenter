@@ -57,8 +57,8 @@
           <span class="comment-text">{{ item.client_name }}</span>
         </template>
         <template #item.recording_url="{ item }">
-          <div class="d-flex align-center">
-            <audio controls style="width: 400px;">
+          <div class="d-flex align-center p-2">
+            <audio controls class="audio" style="width: 400px;">
               <source :src="item.recording_url" type="audio/wav">
               Ваш браузер не поддерживает воспроизведение аудио.
             </audio>
@@ -92,8 +92,7 @@
         </template>
         <template #item.start_date="{ item }">
           <div class="d-flex flex-column gap-2  ">
-            <span class="date-text">Дата начала:{{ item.start_date }}</span>
-            <span class="date-text">Дата окончания:{{ item.end_date }}</span>
+            <span class="date-text">{{ item.start_date }}</span>
           </div>
         </template>
       </v-data-table>
@@ -151,21 +150,16 @@ const headers = [
   { title: 'ID', key: 'id', width: '100px' },
   { title: 'Имя клиента', key: 'client_name', width: '200px' },
   { title: 'Запись звонка', key: 'recording_url', width: '400px' },
-  { title: 'Телефон', key: 'phone', width: '200px' },
-  { title: 'Дата', key: 'start_date', width: '300px' },
   { title: 'Статус', key: 'status_ru', width: '200px' },
+  { title: 'Дата', key: 'start_date', width: '350px' },
+  { title: 'Время отправления', key: 'departure_time', width: '350px' },
+  { title: 'Телефон', key: 'phone', width: '200px' },
 ]
 const statusOptions = [
   "Ожидает",
   "Звонит", 
   "Не отвечен",
-  "Прерван",
-  "Завершен",
-  "Отменен",
-  "Выполняется",
-  "Приостановлен",
-  "Занято",
-  "Ошибка"
+  "Завершен"
 ]
 
 
@@ -280,13 +274,10 @@ el-select.pagination-select {
 .call-container .el-select--large .el-select__wrapper {
   width: 100px!important;
 }
-/* audio {
-  width: 150px;
-  height: 30px;
-  border-radius: 4px;
-  background-color: #f5f5f5;
+audio {
+  padding: 10px;
 }
-audio::-webkit-media-controls-panel {
+/* audio::-webkit-media-controls-panel {
   background-color: #f5f5f5;
   border-radius: 4px;
 }

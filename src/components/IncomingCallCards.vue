@@ -6,9 +6,9 @@
           <img :src="card.icon" alt="">
           <div class="card-title">{{ card.title }}</div>
           <div class="card-value">{{ card.value }}</div>
-          <!-- <div :class="['card-change', card.change > 0 ? 'positive' : 'negative']">
-            {{ card.change }} {{ card.percentage }}%
-          </div> -->
+          <div :class="['card-change', card.percentage ? 'positive' : 'negative']">
+            {{ card.change }}%
+          </div>
         </v-card-text>
       </v-card>
     </div>
@@ -24,44 +24,44 @@ const isLoading = ref(false);
 const data = ref(null);
 const cardsData = computed(() => [
   {
-    icon: 'img/incoming/total.svg', // Placeholder for phone icon
+    icon: 'img/incoming/total.svg',
     title: 'Всего звонков сегодня',
-    value: data.value?.total_calls_today || 0,
-    change: 12.5,
-    percentage: '+',
-    color: '#E3F2FD' // Light blue background
+    value: data.value?.total_calls_today?.count || 0,
+    change: data.value?.total_calls_today?.percentage || 0,
+    percentage: data.value?.total_calls_today?.is_increased,
+    color: '#E3F2FD'
   },
   {
-    icon: 'img/incoming/answered.svg', // Placeholder for checkmark icon
+    icon: 'img/incoming/answered.svg',
     title: 'Отвеченные звонки',
-    value: data.value?.answered_calls || 0,
-    change: -12.5,
-    percentage: '',
-    color: '#E3F2FD' // Light blue background
+    value: data.value?.answered_calls?.count || 0,
+    change: data.value?.answered_calls?.percentage || 0,
+    percentage: data.value?.answered_calls?.is_increased,
+    color: '#E3F2FD'
   },
   {
-    icon: 'img/incoming/missed.svg', // Placeholder for cross icon
+    icon: 'img/incoming/missed.svg',
     title: 'Пропущенные звонки',
-    value: data.value?.missed_calls || 67,
-    change: 12.5,
-    percentage: '+',
-    color: '#E3F2FD' // Light blue background
+    value: data.value?.missed_calls?.count || 0,
+    change: data.value?.answered_calls?.percentage || 0,
+    percentage: data.value?.answered_calls?.is_increased,
+    color: '#E3F2FD'
   },
   {
-    icon: 'img/incoming/average.svg', // Placeholder for clock icon
+    icon: 'img/incoming/average.svg',
     title: 'Средняя длительность',
-    value: data.value?.average_duration || 0,
-    change: 12.5,
-    percentage: '+',
-    color: '#E3F2FD' // Light blue background
+    value: data.value?.average_duration?.count || 0,
+    change: data.value?.average_duration?.percentage || 0,
+    percentage: data.value?.average_duration?.is_increased,
+    color: '#E3F2FD'
   },
   {
-    icon: 'img/incoming/transfered.svg', // Placeholder for clock icon
+    icon: 'img/incoming/transfered.svg',
     title: 'Переведоды на оператора',
-    value: data.value?.transferred_calls || 0,
-    change: 12.5,
-    percentage: '+',
-    color: '#E3F2FD' // Light blue background
+    value: data.value?.transferred_calls?.count || 0,
+    change: data.value?.transferred_calls?.percentage || 0,
+    percentage: data.value?.transferred_calls?.is_increased,
+    color: '#E3F2FD'
   }
 ]);
 
