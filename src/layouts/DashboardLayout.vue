@@ -134,6 +134,7 @@ const currentPageTitle = computed(() => {
     '/outgoing-calls': 'Исходящие звонки',
     '/incoming-calls': 'Входящие звонки',
     '/list-collections': 'Список коллекций',
+    '/appeals': 'Обращения',
     '/settings': 'SIP Настройки'
   }
   return titles[route.path] || 'Dashboard'

@@ -60,7 +60,7 @@ const statusOption = computed(() => {
   return {
     title: [
       {
-        text: `Общее количество /n статусов: ${totalStatusCount.value}`,
+        text: `Общее количество \n статусов: ${totalStatusCount.value}`,
         left: 'center',
         top: 'center',
         textStyle: {

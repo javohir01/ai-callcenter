@@ -1,40 +1,8 @@
 <template>
   <v-container fluid v-loading="isLoading" class="call-container">
     <div>
-      <IncomingCallCards />  
+      <AppealsCards />  
     </div>
-    <v-row class="mt-5">
-      <div class="filter-bar">
-        <el-input
-          v-model.lazy="filter.phoneNumber"
-          class="filter-search"
-          size="large"
-          placeholder="Поиск по номеру телефона"
-          clearable
-          @keyup.enter="fetchOutgoingCall"
-        >
-          <template #prepend>
-            <img src="/img/search.svg" style="width: 18px; height: 18px; margin-right: 6px;" />
-          </template>
-        </el-input>
-        <el-select
-          v-model="filter.status"
-          placeholder="Все статусы"
-          size="large"
-          class="status-select"
-          @update:modelValue="fetchOutgoingCall"
-          clearable
-        >
-          <el-option
-            v-for="item in statusOptions"
-            :key="item + 'page'"
-            :label="item"
-            :value="item"
-          />
-        </el-select>
-      </div>
-    </v-row>
-
     <!-- Data Table -->
     <div class="table-container">
       <v-data-table
@@ -134,7 +102,7 @@
 <script setup lang="ts">
 import { ref, h, watch, onMounted } from 'vue'
 import {useCallStore} from "@/stores/call";
-import IncomingCallCards from '@/components/IncomingCallCards.vue';
+import AppealsCards from '@/components/AppealsCards.vue';
 
 const callStore = useCallStore()
 
@@ -162,13 +130,13 @@ const statusOptions = [
 
 const headers = [
   { title: '#', key: 'index', width: '60px', sortable: false },
-  { title: 'ID', key: 'id', width: '100px' },
-  { title: 'Дата', key: 'start_date', width: '300px' },
-  { title: 'Телефон', key: 'phone', width: '200px' },
-  { title: 'Статус', key: 'status_ru', width: '200px' },
+  { title: 'Номер телефона', key: 'phone', width: '100px' },
+  { title: 'Дата и время звонка', key: 'start_date', width: '300px' },
+  { title: 'Язык обращения', key: 'phone', width: '200px' },
   { title: 'Запись звонка', key: 'recording_url', width: '400px' },
-  // { title: 'Тип запроса', key: 'direction', width: '200px' },
-  // { title: 'Результат', key: 'client_name', width: '200px' },
+  { title: 'Транскрипция звонка', key: 'direction', width: '200px' },
+  { title: 'Статус обращения', key: 'status_ru', width: '200px' },
+  { title: 'Комментрарий', key: 'client_name', width: '200px' },
 ]
 
 watch([filter.value.page, filter.value.per_page], () => {

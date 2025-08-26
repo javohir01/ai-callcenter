@@ -31,6 +31,11 @@ const router = createRouter({
           component: () => import('@/views/ListCollections.vue')
         },
         {
+          path: '/appeals',
+          name: 'Обращения',
+          component: () => import('@/views/Appeals.vue')
+        },
+        {
           path: '/settings',
           name: 'SIP Настройки',
           component: () => import('@/views/Settings.vue')
