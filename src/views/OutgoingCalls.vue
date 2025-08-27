@@ -46,7 +46,7 @@
         class="balance-table"
       >
         <template #item.index="{ index }">
-          <span class="row-number">{{ index + 1 }}</span>
+          <span class="row-number">{{ (filter.page-1)*filter.per_page + index + 1 }}</span>
         </template>
 
         <template #item.id="{ item }">
