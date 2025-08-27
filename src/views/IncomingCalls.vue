@@ -60,19 +60,13 @@
         </template>
         <template #item.recording_url="{ item }">
           <div class="d-flex align-center p-2">
-            <audio controls style="width: 400px;">
+            <audio 
+              controls
+              style="width: 400px;"
+            >
               <source :src="item.recording_url" type="audio/wav">
               Ваш браузер не поддерживает воспроизведение аудио.
             </audio>
-            <v-btn
-              variant="plain"
-              color="primary"
-              size="large"
-              :href="item.recording_url"
-              download
-            >
-              <v-icon>mdi-download</v-icon>
-            </v-btn>
           </div>
         </template>
 
@@ -160,9 +154,7 @@ const headers = [
   { title: 'Дата', key: 'start_date', width: '300px' },
   { title: 'Телефон', key: 'phone', width: '200px' },
   { title: 'Статус', key: 'status_ru', width: '200px' },
-  { title: 'Запись звонка', key: 'recording_url', width: '400px' },
-  // { title: 'Тип запроса', key: 'direction', width: '200px' },
-  // { title: 'Результат', key: 'client_name', width: '200px' },
+  { title: 'Запись звонка', key: 'recording_url', width: '400px' }
 ]
 
 watch([filter.value.page, filter.value.per_page], () => {
@@ -210,7 +202,6 @@ const getChipStyle = (status: string) => {
     default: return '#1B3822'
   }
 };
-
 onMounted(() => {
   fetchOutgoingCall()
 })

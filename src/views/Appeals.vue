@@ -24,15 +24,6 @@
               <source :src="item.audio_url" type="audio/wav">
               Ваш браузер не поддерживает воспроизведение аудио.
             </audio>
-            <v-btn
-              variant="plain"
-              color="primary"
-              size="large"
-              :href="item.audio_url"
-              download
-            >
-              <v-icon>mdi-download</v-icon>
-            </v-btn>
           </div>
         </template>
         <template #item.status_ru="{ item }">
