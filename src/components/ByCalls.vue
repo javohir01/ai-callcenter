@@ -46,14 +46,24 @@ let dayData = reactive(null);
 const totalStatusCount = ref(null);
 const totalDayCount = ref(null);
 
+function getColor(status) {
+  switch(status) {
+    case "Завершен":
+      return '#4CAF50';
+    case "Не отвечен":
+      return '#F44336';
+    case "Звонит":
+      return '#3B82F6';
+    }
+}
 const statusOption = computed(() => {
   let chartData = [];
   if (statusData && statusData.length > 0) {
     chartData = statusData.map(item => ({
-      value: item.percentage,
+      value: item.percentage || 10,
       name: item.label_ru,
       itemStyle: {
-        color: item.label_ru === "Завершен" ? '#4CAF50' : '#F44336'
+        color: getColor(item.label_ru)
       }
     }));
   }
