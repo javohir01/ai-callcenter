@@ -112,6 +112,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { useSipStore } from "@/stores/sip";
+import { ElMessage } from 'element-plus'
 
 const sipStore = useSipStore();
 
@@ -172,13 +173,19 @@ const handleSave = async () => {
   try {
     if (form.id) {
       await sipStore.update(form);
+      ElMessage.success('Информация успешно обновлена!');
     } else {
       await sipStore.create(form);
+      ElMessage.success('Информация успешно сохранены!');
     }
     dialogLoading.value = false;
+    isFormDialog.value = false
     fetchData();
+  } catch (error) {
+    console.error(error);
+    ElMessage.error(error.response?.data?.message || 'Произошла ошибка при сохранении!');
   } finally {
-    loading.value = false;
+    dialogLoading.value = false;
   }
 };
 
