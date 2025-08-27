@@ -155,8 +155,15 @@ el-select.pagination-select {
 }
 .call-container .el-select--large .el-select__wrapper {
   width: 100px!important;
+  border-radius: 16px;
 }
 .call-container .el-select--large.status-select .el-select__wrapper {
   width: 300px!important;
+}
+
+thead tr th {
+  font-weight: 600;
+  font-size: 12px;
+  color: #8A8A8A;
 }
 </style>
