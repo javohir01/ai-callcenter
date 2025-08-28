@@ -14,7 +14,7 @@
       />
     </div>
     <div style="display: flex; gap: 20px;">
-      <VChart :option="statusOption" style="height: 300px; width: 50%;" />
+      <VChart :option="statusOption" :init-options="{ renderer: 'canvas' }" autoresize  style="height: 300px; width: 50%;" />
       <VChart :option="dayOption" style="height: 300px; width: 50%;" />
     </div>
   </div>
@@ -49,9 +49,9 @@ const totalDayCount = ref(null);
 function getColor(status) {
   switch(status) {
     case "Завершен":
-      return '#4CAF50';
+      return '#34D399';
     case "Не отвечен":
-      return '#F44336';
+      return '#A7C7FB';
     case "Звонит":
       return '#3B82F6';
     }
@@ -60,7 +60,7 @@ const statusOption = computed(() => {
   let chartData = [];
   if (statusData && statusData.length > 0) {
     chartData = statusData.map(item => ({
-      value: item.percentage || 10,
+      value: item.percentage || 0,
       name: item.label_ru,
       itemStyle: {
         color: getColor(item.label_ru)
@@ -95,6 +95,26 @@ const statusOption = computed(() => {
         radius: ['60%', '80%'],
         avoidLabelOverlap: false,
         label: { show: false },
+        itemStyle: {
+          borderRadius: 6,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          formatter: '{c}%',
+          color: '#fff',
+          fontSize: 12,
+          fontWeight: 'bold'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 16,
+            fontWeight: 'bold'
+          }
+        },
         data: chartData
       }
     ]
@@ -146,11 +166,11 @@ const dayOption = computed(() => {
       data: days,
       axisLine: {
         lineStyle: {
-          color: '#ccc'
+          color: 'transparent'
         }
       },
       axisLabel: {
-        color: '#666'
+        color: '#6B7280'
       }
     },
     yAxis: {
@@ -179,11 +199,11 @@ const dayOption = computed(() => {
         symbol: 'emptyCircle',
         symbolSize: 8,
         itemStyle: {
-          color: '#5470c6'
+          color: '#34D399'
         },
         lineStyle: {
           width: 3,
-          color: '#5470c6'
+          color: '#34D399'
         },
         areaStyle: {
           color: {
@@ -195,20 +215,20 @@ const dayOption = computed(() => {
             colorStops: [
               {
                 offset: 0,
-                color: 'rgba(84, 112, 198, 0.3)'
+                color: 'rgb(55, 210, 153, 0.5)'
               },
               {
                 offset: 1,
-                color: 'rgba(84, 112, 198, 0.1)'
+                color: 'rgba(55, 210, 153, 0.1)'
               }
             ]
           }
         },
-        markPoint: {
-          data: [
-            { type: 'max', name: 'Максимум' }
-          ]
-        }
+        // markPoint: {
+        //   data: [
+        //     { type: 'max', name: 'Максимум' }
+        //   ]
+        // }
       }
     ]
   };
@@ -252,4 +272,21 @@ onMounted(() => {
   color: #666;
   margin-bottom: 10px;
 }
+.chart-wrapper {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      padding: 15px;
+      height: 350px;
+    }
+    .pie-chart {
+      flex: 1;
+      max-width: 50%;
+    }
+    .line-chart {
+      flex: 1;
+    }
+    .filter-date {
+      width: 300px;
+    }
 </style>
