@@ -49,7 +49,7 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
-  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
+  } else if (to.meta.requiresGuest && authStore.isAuthenticated || to.path == '/') {
     next('/outgoing-calls')
   } else {
     next()
