@@ -168,21 +168,18 @@ const handleLogout = () => {
 }
 
 .logo-text {
-  font-family: 'Montserrat', sans-serif;
   font-weight: 600;
   font-size: 24px;
   color: white;
 }
 
 .logo-text-mini {
-  font-family: 'Montserrat', sans-serif;
   font-weight: 600;
   font-size: 16px;
   color: white;
 }
 
 .logo-subtitle {
-  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.2;
@@ -250,7 +247,7 @@ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .avatar-text {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Mulish' sans-serif;
   font-weight: 500;
   font-size: 18px;
   color: #2563eb;

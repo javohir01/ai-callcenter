@@ -11,7 +11,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import ru from 'element-plus/dist/locale/ru.mjs'
 import '@mdi/font/css/materialdesignicons.css'
-import './assets/main.css'
+import './assets/css/main.css'
 import 'vuetify/styles'
 
 const vuetify = createVuetify({

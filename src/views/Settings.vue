@@ -239,9 +239,5 @@ onMounted(fetchData);
   font-size: 16px;
   font-weight: 500;
 }
-.el-input__wrapper
-{
-  border-radius: 16px !important;
-  padding: 10px 12px !important;
-}
+
 </style>

@@ -1,0 +1,16 @@
+@import './font.css';
+body {
+    font-family: 'Mulish' sans-serif!important;
+}
+.call-container .el-select--large .el-select__wrapper {
+  width: 100px!important;
+  border-radius: 16px;
+}
+.call-container .el-select--large.status-select .el-select__wrapper {
+  width: 300px!important;
+}
+.el-input__wrapper
+{
+  border-radius: 16px !important;
+  padding: 10px 12px !important;
+}

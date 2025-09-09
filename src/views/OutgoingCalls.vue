@@ -264,20 +264,9 @@ el-select.pagination-select {
 }
 .call-container .el-select--large .el-select__wrapper {
   width: 100px!important;
+  border-radius: 16px;
 }
 audio {
   padding: 10px;
 }
-/* audio::-webkit-media-controls-panel {
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
-audio::-webkit-media-controls-play-button {
-  background-color: #4CAF50;
-  border-radius: 50%;
-}
-audio::-webkit-media-controls-current-time-display,
-audio::-webkit-media-controls-time-remaining-display {
-  color: #333;
-} */
 </style>

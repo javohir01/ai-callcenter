@@ -248,7 +248,7 @@ const resendOTP = async () => {
 }
 
 .logo-text {
-  font-family: 'Montserrat', sans-serif;
+  font-family: Mulish sans-serif;
   font-weight: 700;
   font-size: 32px;
   color: white;
@@ -256,7 +256,7 @@ const resendOTP = async () => {
 }
 
 .logo-subtitle {
-  font-family: 'Montserrat', sans-serif;
+  font-family: Mulish sans-serif;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.2;
