@@ -178,7 +178,7 @@ const getStatusColor = (status: string) => {
       case "Звонит": return '#FEF2F2';
       case "Не отвечен": return '#E2FBE8'
       case "Прерван": return '#E2FBE8'
-      case "Завершен": return '#FEF2F2'
+      case "Завершен": return '#E2FBE8'
       case "Отменен": return '#E2FBE8'
       case "Выполняется": return '#FEF2F2'
       case "Приостановлен": return '#FEF2F2'
